@@ -2,12 +2,42 @@ import React, { useEffect, useState } from "react";
 // import "./register.css";
 import { FaGoogle, FaFacebookF, FaXTwitter } from "react-icons/fa6"; 
 import gsap from "gsap";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 export default function Register() {
+
+  //for gsap
   const [userState, setUserState] = useState(false);
   const [fullNameState, setFullNameState] = useState(false);
   const [emailState, setEmailState] = useState(false);
   const [passState, setPassState] = useState(false);
+
+  //data work
+  const [fullname , setFullname] = useState("");
+  const [email , setEmail] = useState("");
+  const [password , setPassword] = useState("");
+  const [username , setUsername] = useState("");
+  
+  const navi = useNavigate()
+
+const Submit = async(e) => {
+  e.preventDefault()
+  const data = {
+    fullname,
+    email,
+    password,
+    username
+  }
+  try{
+    const res = await axios.post("http://localhost:5000/api/auth/register", data)
+    console.log(res)
+    navi("/login")
+  }
+  catch(error){
+    console.log(error)
+  }
+}
 
   useEffect(() => {
     gsap.to(".userLabel", { top: userState ? "-10px" : "", duration: 0.3, ease: "power2.out" });
@@ -48,24 +78,24 @@ export default function Register() {
 
           <h3 className="text-2xl font-semibold sign text-gray-700 mt-4">Sign Up</h3>
 
-          <form className="mt-6">
+          <form className="mt-6" onSubmit={Submit}>
             <div className="relative mb-4">
-              <input type="text" id="username" placeholder=" " className="w-full px-4 py-3 border border-gray-300 rounded-md peer" onFocus={() => setUserState(true)} />
+              <input type="text"  id="username" placeholder=" " className="w-full px-4 py-3 border border-gray-300 rounded-md peer" onChange={(e) => setUsername(e.target.value)} onFocus={() => setUserState(true)} />
               <label htmlFor="username" className="absolute userLabel cursor-text left-4 top-3 text-gray-400 text-sm bg-white px-2 text-[17px]">Username</label>
             </div>
 
             <div className="relative mb-4">
-              <input type="text" id="fullname" placeholder=" " className="w-full px-4 py-3 border border-gray-300 rounded-md peer" onFocus={() => setFullNameState(true)} />
+              <input type="text" id="fullname" placeholder=" " className="w-full px-4 py-3 border border-gray-300 rounded-md peer" onChange={(e) => setFullname(e.target.value)} onFocus={() => setFullNameState(true)} />
               <label htmlFor="fullname" className="absolute fullNameLabel cursor-text left-4 top-3 text-gray-400 text-sm bg-white px-2 text-[17px]">Full Name</label>
             </div>
 
             <div className="relative mb-4">
-              <input type="email" id="email" placeholder=" " className="w-full px-4 py-3 border border-gray-300 rounded-md peer" onFocus={() => setEmailState(true)} />
+              <input type="email" id="email" placeholder=" " className="w-full px-4 py-3 border border-gray-300 rounded-md peer" onChange={(e) => setEmail(e.target.value)} onFocus={() => setEmailState(true)} />
               <label htmlFor="email" className="absolute emailLabel cursor-text left-4 top-3 text-gray-400 text-sm bg-white px-2 text-[17px]">Email</label>
             </div>
 
             <div className="relative mb-4">
-              <input type="password" id="password" placeholder=" " className="w-full px-4 py-3 border border-gray-300 rounded-md peer" onFocus={() => setPassState(true)} />
+              <input type="password" id="password" placeholder=" " className="w-full px-4 py-3 border border-gray-300 rounded-md peer" onChange={(e) => setPassword(e.target.value)} onFocus={() => setPassState(true)} />
               <label htmlFor="password" className="absolute passLabel left-4 cursor-text top-3 text-gray-400 text-sm bg-white px-2 text-[17px]">Password</label>
             </div>
 

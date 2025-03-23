@@ -2,50 +2,101 @@ import React, { useEffect, useState } from "react";
 import "./login.css";
 import { FaGoogle, FaFacebookF, FaXTwitter } from "react-icons/fa6"; 
 import gsap from "gsap";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 export default function Login() {
+  // for gsap
   const [emailState, setEmailState] = useState(false);
   const [passState, setPassState] = useState(false);
 
+  // for handleLogin
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [message,setMessage] = useState("")
+  
+  const navigate = useNavigate();
+
+  const submit = async (e) => {
+    e.preventDefault();
+    const data = { email, password };
+    try {
+      const res = await axios.post("http://localhost:5000/api/auth/login", data);
+      console.log(res);
+
+      if (res.data.token) {
+
+        localStorage.setItem("token", res.data.token);
+
+
+        navigate("/"); 
+      }
+    }  catch (error) {
+      if (error.response) {
+        setMessage(error.response.data);
+      } else {
+
+        setMessage("An error occurred. Please try again later.");
+      }
+    }
+  };
+
   useEffect(() => {
     gsap.to(".emailLabel", {
-      top: emailState ? "-10px" :"",
+      top: emailState ? "-10px" : "",
       duration: 0.3,
-      ease: "power2.out"
+      ease: "power2.out",
     });
   }, [emailState]);
 
   useEffect(() => {
     gsap.to(".passLabel", {
-      top: passState ? "-10px" : "10x",
+      top: passState ? "-10px" : "",
       duration: 0.3,
-      ease: "power2.out"
+      ease: "power2.out",
     });
   }, [passState]);
 
+  useEffect(() => {
+    gsap.from(".card", {
+      scale: 0,
+      duration: 0.8,
+      ease: "power2.out",
+    });
+    gsap.to(".card", {
+      scale: 1,
+      duration: 0.8,
+      ease: "power2.out",
+    });
+  }, []);
+
   return (
     <div className="flex justify-center items-center h-screen bg-gray-100">
-      <div className="flex w-full h-full items-center md:items-stretch max-w-4xl p-2 md:h-3/4 bg-white rounded-2xl shadow-lg">
-        {/* Left Side - Image */}
+      <div className="flex w-full h-full card items-center md:items-stretch max-w-4xl p-2 md:h-3/4 bg-white rounded-2xl shadow-lg">
+        {/* Left Side*/}
         <div className="hidden md:block w-1/2">
-          <img src="/src/assets/images/tripImage.jfif" alt="trip" className="w-full h-full object-cover rounded-2xl" />
+          <img
+            src="/src/assets/images/tripImage.jfif"
+            alt="trip"
+            className="w-full h-full object-cover rounded-2xl"
+          />
         </div>
 
-        {/* Right Side - Login Form */}
+        {/* Right Side*/}
         <div className="w-full md:w-1/2 p-4 flex flex-col p-8">
           <h1 className="text-3xl font-bold connection text-center text-gray-800">Welcome to Jouala</h1>
           <h3 className="text-2xl font-semibold sign text-gray-700 mt-4">Sign in</h3>
 
-          <form className="mt-6">
-            {/* Input Field 1 */}
+          <form className="mt-6" onSubmit={submit}>
+
             <div className="relative mb-4">
               <input
-                type="text"
+                type="email"
                 id="email"
                 placeholder=" "
                 className="w-full px-4 py-3 border border-gray-300 rounded-md peer"
+                onChange={(e) => setEmail(e.target.value)}
                 onFocus={() => setEmailState(true)}
-                // onBlur={() => setEmailState(false)}
               />
               <label
                 htmlFor="email"
@@ -55,15 +106,15 @@ export default function Login() {
               </label>
             </div>
 
-            {/* Input Field 2 */}
+
             <div className="relative mb-4">
               <input
                 type="password"
                 id="password"
                 placeholder=" "
                 className="w-full px-4 py-3 border border-gray-300 rounded-md peer"
+                onChange={(e) => setPassword(e.target.value)} 
                 onFocus={() => setPassState(true)}
-                // onBlur={() => setPassState(false)}
               />
               <label
                 htmlFor="password"
@@ -72,8 +123,6 @@ export default function Login() {
                 Password
               </label>
             </div>
-
-            {/* Forgot Password */}
             <div>
               <p className="pb-4 text-gray-500">
                 Forgot your password?{" "}
@@ -83,13 +132,13 @@ export default function Login() {
               </p>
             </div>
 
-            {/* Sign In Button */}
             <button className="w-full bg-[#00b69a] text-white py-3 rounded-md font-semibold hover:bg-[#14a48f] transition-all">
               Sign In
             </button>
+            {message && <p className="text-red-500 text-center">{message}</p>}
+
           </form>
 
-          {/* Bottom Text */}
           <p className="text-center text-gray-500 mt-4">
             Don't have an account?{" "}
             <a href="register" className="text-blue-600 font-semibold">
@@ -105,7 +154,7 @@ export default function Login() {
 
           <div className="mt-2 flex justify-center gap-3">
             <button className="p-3 border border-gray-500 rounded-md text-gray-700 hover:bg-gray-100 transition-all">
-              <FaGoogle className="text-red-500" /> 
+              <FaGoogle className="text-red-500" />
             </button>
 
             <button className="p-3 border border-gray-500 rounded-md text-gray-700 hover:bg-gray-100 transition-all">
@@ -113,7 +162,7 @@ export default function Login() {
             </button>
 
             <button className="p-3 border border-gray-500 rounded-md text-gray-700 hover:bg-gray-100 transition-all">
-              <FaXTwitter className="text-black" /> 
+              <FaXTwitter className="text-black" />
             </button>
           </div>
         </div>
