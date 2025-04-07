@@ -1,5 +1,5 @@
-import { Link } from 'react-router-dom';
-import { useState } from 'react';
+import { Link } from "react-router-dom";
+import { useState } from "react";
 
 const Navbar = ({ isLoggedIn = false }) => {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
@@ -11,11 +11,7 @@ const Navbar = ({ isLoggedIn = false }) => {
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <Link to="/" className="flex-shrink-0 flex items-center">
-              <img
-                className="h-8 w-auto"
-                src=""
-                alt="Logo"
-              />
+              <img className="h-8 w-auto" src="" alt="Logo" />
               <span className="ml-2 text-xl font-bold text-[#F4A261] hidden sm:block">
                 JOUALA
               </span>
@@ -129,7 +125,7 @@ const Navbar = ({ isLoggedIn = false }) => {
                     />
                   </svg>
                   Profile
-                </Link> */}
+                </Link>
                 <button className="text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 px-3 py-2 rounded-md text-sm font-medium flex items-center">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -144,7 +140,7 @@ const Navbar = ({ isLoggedIn = false }) => {
                     />
                   </svg>
                   Logout
-                </button>
+                </button> */}
               </>
             ) : (
               <>

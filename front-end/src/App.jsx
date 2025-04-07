@@ -10,7 +10,7 @@ import Suggestions from './suggestions/suggestions';
 
 function App() {
   return (
-    <div>
+  
       <BrowserRouter>
       <Navbar/>
       <Routes>
@@ -21,7 +21,7 @@ function App() {
       <Footer/>
       </BrowserRouter>
 
-    </div>
+    
   );
 }
 
