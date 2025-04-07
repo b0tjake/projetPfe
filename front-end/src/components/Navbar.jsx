@@ -6,7 +6,7 @@ const Navbar = ({ isLoggedIn = false }) => {
   // const [searchQuery, setSearchQuery] = useState('');
 
   return (
-    <nav className="bg-white shadow-md fixed w-full z-10">
+    <nav className="bg-white shadow-md w-full z-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
@@ -112,9 +112,9 @@ const Navbar = ({ isLoggedIn = false }) => {
           <div className="hidden sm:ml-6 sm:flex sm:items-center">
             {isLoggedIn ? (
               <>
-                <Link
+                {/* <Link
                   to="/profile"
-                  className="text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 px-3 py-2 rounded-md text-sm font-medium flex items-center"
+                  className="text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-md text-sm font-medium flex items-center"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -129,7 +129,7 @@ const Navbar = ({ isLoggedIn = false }) => {
                     />
                   </svg>
                   Profile
-                </Link>
+                </Link> */}
                 <button className="text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 px-3 py-2 rounded-md text-sm font-medium flex items-center">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -150,7 +150,7 @@ const Navbar = ({ isLoggedIn = false }) => {
               <>
                 <Link
                   to="/login"
-                  className="text-gray-700 hover:text-[#000000] dark:text-gray-300 dark:hover:bg-gray-700 px-3 py-2 rounded-md text-sm font-medium"
+                  className="text-gray-700 hover:text-[#000000] px-3 py-2 rounded-md text-sm font-medium"
                 >
                   Login
                 </Link>
@@ -212,23 +212,23 @@ const Navbar = ({ isLoggedIn = false }) => {
 
       {/* Mobile menu */}
       {showMobileMenu && (
-        <div className="sm:hidden">
+        <div className="sm:hidden absolute z-10 bg-[#fff] w-full flex justify-center">
           <div className="pt-2 pb-3 space-y-1">
             <Link
               to="/"
-              className="bg-blue-50 border-blue-500 text-blue-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium dark:bg-gray-700 dark:text-white"
+              className="border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
             >
               Home
             </Link>
             <Link
               to="/add-post"
-              className="border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800 block pl-3 pr-4 py-2 border-l-4 text-base font-medium dark:text-gray-300 dark:hover:bg-gray-600"
+              className="border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
             >
               Add Post
             </Link>
             <Link
               to="/suggestions"
-              className="border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800 block pl-3 pr-4 py-2 border-l-4 text-base font-medium dark:text-gray-300 dark:hover:bg-gray-600"
+              className="border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
             >
               Suggestions
             </Link>
