@@ -10,19 +10,21 @@ app.post('/register', async (req, res) => {
     const { username, fullname, email, password } = req.body;
 
     try {
-        // Check if email already exists
+        const userNameExiste = await User.findOne({ username });
+        if (userNameExiste) {
+            return res.status(400).json({message: "Username already exists"});
+        }
         const existingUser = await User.findOne({ email });
         if (existingUser) {
-            return res.status(400).json("Email already in use");
+            return res.status(400).json({message: "Email already exists"});
         }
 
-        // Create and save user
         const user = new User({ username, fullname, email, password });
         await user.save();
-        res.status(201).json(user); // Return created user
+        res.status(201).json({message: "User created successfully" , user : user});
     } catch (error) {
         console.log("Couldn't create user", error);
-        res.status(400).json("Couldn't create user");
+        res.status(400).json({message: "Couldn't create user"});
     }
 });
 
@@ -43,7 +45,7 @@ app.post('/login', async (req, res) => {
         // Generate JWT token
         const token = jwt.sign({ email: userExists.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-        res.status(200).json({ token });
+        res.status(200).json({message:"You will be redirected to Home", token : token });
     } catch (error) {
         console.log("Error during login", error);
         res.status(500).json("Error logging in");

@@ -18,6 +18,8 @@ export default function Register() {
   const [email , setEmail] = useState("");
   const [password , setPassword] = useState("");
   const [username , setUsername] = useState("");
+  const [message , setMessage] = useState("");
+  const [error , setError] = useState("");
   
   const navi = useNavigate()
 
@@ -32,10 +34,16 @@ const Submit = async(e) => {
   try{
     const res = await axios.post("http://localhost:5000/api/auth/register", data)
     console.log(res)
-    navi("/login")
+    setError("");
+    setMessage(res.data.message)
+    // console.log(message)
+    setTimeout(()=> {
+      navi("/login")
+    },2000)
   }
   catch(error){
-    console.log(error)
+    console.log(error.response.data.message);
+    setError(error.response.data.message);
   }
 }
 
@@ -102,6 +110,8 @@ const Submit = async(e) => {
             <button className="w-full bg-[#00b69a] text-white py-3 rounded-md font-semibold hover:bg-[#14a48f] transition-all">
               Sign Up
             </button>
+            <p className="text-center text-red-500 mt-2">{error}</p>
+            <p className="text-center text-green-500 mt-2">{message}</p>
           </form>
 
           <p className="text-center text-gray-500 mt-4">

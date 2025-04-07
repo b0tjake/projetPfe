@@ -14,6 +14,7 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message,setMessage] = useState("")
+  const [errmessage,seterrMessage] = useState("")
   
   const navigate = useNavigate();
 
@@ -23,20 +24,25 @@ export default function Login() {
     try {
       const res = await axios.post("http://localhost:5000/api/auth/login", data);
       console.log(res);
-
+      
       if (res.data.token) {
-
         localStorage.setItem("token", res.data.token);
+        setMessage(res.data.message);
+        seterrMessage("");
+        setTimeout(()=> {
+
+          navigate("/"); 
+        },2000)
 
 
-        navigate("/"); 
+
       }
     }  catch (error) {
       if (error.response) {
-        setMessage(error.response.data);
+        seterrMessage(error.response.data);
       } else {
 
-        setMessage("An error occurred. Please try again later.");
+        seterrMessage("An error occurred. Please try again later.");
       }
     }
   };
@@ -135,7 +141,8 @@ export default function Login() {
             <button className="w-full bg-[#00b69a] text-white py-3 rounded-md font-semibold hover:bg-[#14a48f] transition-all">
               Sign In
             </button>
-            {message && <p className="text-red-500 text-center">{message}</p>}
+            {errmessage && <p className="text-red-500 text-center">{errmessage}</p>}
+            {message && <p className="text-green-500 text-center">{message}</p>}
 
           </form>
 
