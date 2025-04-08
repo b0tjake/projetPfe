@@ -5,7 +5,7 @@ import gsap from "gsap";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
-export default function Register() {
+export default function Register({setLoading}) {
 
   //for gsap
   const [userState, setUserState] = useState(false);
@@ -41,12 +41,14 @@ try {
   });
 
     console.log(res)
+    setLoading(true)
     setError("");
     setMessage(res.data.message)
     // console.log(message)
     setTimeout(()=> {
       navi("/login")
-    },2000)
+      setLoading(false)
+    },1000)
   }
   catch(error){
     console.log(error.response.data.message);

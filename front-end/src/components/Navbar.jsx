@@ -1,9 +1,21 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+// import useNivigate from "../hooks/useNavigate";
 import { useState } from "react";
 
-const Navbar = ({ isLoggedIn = false }) => {
+const Navbar = ({setLoading}) => {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   // const [searchQuery, setSearchQuery] = useState('');
+  const token = localStorage.getItem("token");
+  const navigate = useNavigate();
+  const logOut = () => {
+    localStorage.removeItem("token");
+    setLoading(true);
+    setTimeout(() => {
+      navigate("/login");
+      setLoading(false);
+    }, 1000);
+    
+  }
 
   return (
     <nav className="bg-white shadow-md w-full z-10">
@@ -106,9 +118,9 @@ const Navbar = ({ isLoggedIn = false }) => {
           </div>
 
           <div className="hidden sm:ml-6 sm:flex sm:items-center">
-            {isLoggedIn ? (
+            {token ? (
               <>
-                {/* <Link
+                <Link
                   to="/profile"
                   className="text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-md text-sm font-medium flex items-center"
                 >
@@ -126,7 +138,7 @@ const Navbar = ({ isLoggedIn = false }) => {
                   </svg>
                   Profile
                 </Link>
-                <button className="text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 px-3 py-2 rounded-md text-sm font-medium flex items-center">
+                <button onClick={logOut} className="text-white hover:bg-red-400 bg-red-600 dark:text-white dark:hover:bg-red-700 px-3 py-2 rounded-md text-sm font-medium flex items-center">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-5 w-5 mr-1"
@@ -140,7 +152,7 @@ const Navbar = ({ isLoggedIn = false }) => {
                     />
                   </svg>
                   Logout
-                </button> */}
+                </button>
               </>
             ) : (
               <>
@@ -228,7 +240,7 @@ const Navbar = ({ isLoggedIn = false }) => {
             >
               Suggestions
             </Link>
-            {isLoggedIn ? (
+            {token ? (
               <>
                 <Link
                   to="/profile"
@@ -236,7 +248,7 @@ const Navbar = ({ isLoggedIn = false }) => {
                 >
                   Profile
                 </Link>
-                <button className="border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800 block pl-3 pr-4 py-2 border-l-4 text-base font-medium w-full text-left">
+                <button onClick={logOut} className="border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800 block pl-3 pr-4 py-2 border-l-4 text-base font-medium w-full text-left">
                   Logout
                 </button>
               </>

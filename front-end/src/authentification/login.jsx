@@ -5,7 +5,7 @@ import gsap from "gsap";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
-export default function Login() {
+export default function Login({setLoading}) {
   // for gsap
   const [emailState, setEmailState] = useState(false);
   const [passState, setPassState] = useState(false);
@@ -18,21 +18,24 @@ export default function Login() {
   
   const navigate = useNavigate();
 
+  // setLoading(false)
   const submit = async (e) => {
     e.preventDefault();
     const data = { email, password };
     try {
       const res = await axios.post("http://localhost:5000/api/auth/login", data);
       console.log(res);
+      setLoading(true)
+
       
       if (res.data.token) {
         localStorage.setItem("token", res.data.token);
         setMessage(res.data.message);
         seterrMessage("");
         setTimeout(()=> {
-
           navigate("/"); 
-        },2000)
+          setLoading(false)
+        },1500)
 
 
 
