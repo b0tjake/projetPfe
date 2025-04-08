@@ -19,5 +19,9 @@ const userSchema = new mongoose.Schema({
         type : String,
         required : true
     },
+    image:{
+        type:String,
+        default : "profilePics/default.jfif"
+    }
 })
 module.exports=mongoose.model("User", userSchema)

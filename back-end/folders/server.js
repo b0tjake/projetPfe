@@ -7,7 +7,7 @@ const auth = require('./routes/auth');
 
 dotenv.config()
 
-connectDb()
+connectDb() 
 app.use(express.json())
 app.use(cors())
 app.use("/api/auth", auth)

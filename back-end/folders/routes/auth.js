@@ -6,7 +6,7 @@ const app = express();
 app.use(express.json());
 
 // Registration route
-app.post('/register', async (req, res) => {
+app.post('/register',upload.single('image'), async (req, res) => {
     const { username, fullname, email, password } = req.body;
 
     try {
@@ -19,7 +19,7 @@ app.post('/register', async (req, res) => {
             return res.status(400).json({message: "Email already exists"});
         }
 
-        const user = new User({ username, fullname, email, password });
+        const user = new User({ username, fullname, email, password , image:req.file? req.file.path:undefined });
         await user.save();
         res.status(201).json({message: "User created successfully" , user : user});
     } catch (error) {
@@ -51,6 +51,7 @@ app.post('/login', async (req, res) => {
         res.status(500).json("Error logging in");
     }
 });
+app.use('/profilePics',express.static('profilePics'));
 
 
 module.exports = app;
