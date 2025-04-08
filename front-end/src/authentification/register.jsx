@@ -18,6 +18,7 @@ export default function Register() {
   const [email , setEmail] = useState("");
   const [password , setPassword] = useState("");
   const [username , setUsername] = useState("");
+  const [image , setImage] = useState("");
   const [message , setMessage] = useState("");
   const [error , setError] = useState("");
   
@@ -25,14 +26,20 @@ export default function Register() {
 
 const Submit = async(e) => {
   e.preventDefault()
-  const data = {
-    fullname,
-    email,
-    password,
-    username
-  }
-  try{
-    const res = await axios.post("http://localhost:5000/api/auth/register", data)
+  const formData = new FormData();
+formData.append("fullname", fullname);
+formData.append("email", email);
+formData.append("password", password);
+formData.append("username", username);
+formData.append("image", image); // file
+
+try {
+  const res = await axios.post("http://localhost:5000/api/auth/register", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data"
+    }
+  });
+
     console.log(res)
     setError("");
     setMessage(res.data.message)
@@ -106,8 +113,10 @@ const Submit = async(e) => {
               <input type="password" id="password" placeholder=" " className="w-full px-4 py-3 border border-gray-300 rounded-md peer" onChange={(e) => setPassword(e.target.value)} onFocus={() => setPassState(true)} />
               <label htmlFor="password" className="absolute passLabel left-4 cursor-text top-3 text-gray-400 text-sm bg-white px-2 text-[17px]">Password</label>
             </div>
-
-            <button className="w-full bg-[#00b69a] text-white py-3 rounded-md font-semibold hover:bg-[#14a48f] transition-all">
+            <div>
+              <input type="file" id="image" className="w-full px-4 py-3 border border-gray-300 rounded-md peer" onChange={(e) => setImage(e.target.files[0])} />
+            </div>
+            <button className="w-full bg-[#00b69a] text-white py-3 mt-3 rounded-md font-semibold hover:bg-[#14a48f] transition-all">
               Sign Up
             </button>
             <p className="text-center text-red-500 mt-2">{error}</p>

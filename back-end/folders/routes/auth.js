@@ -1,6 +1,19 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user'); // Ensure the path is correct
+const multer = require('multer');
+const path = require('path');
+
+
+const storage = multer.diskStorage({
+    destination : (req,file,cb) => 
+    cb(null,'profilePics/'),
+    filename : (req,file,cb) => {
+        cb(null,Date.now() + path.extname(file.originalname));
+    }
+    
+    })
+const upload = multer({storage})
 
 const app = express();
 app.use(express.json());
@@ -43,7 +56,11 @@ app.post('/login', async (req, res) => {
         }
 
         // Generate JWT token
-        const token = jwt.sign({ email: userExists.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        const token = jwt.sign({ email: userExists.email,
+            username : userExists.username,
+            fullname : userExists.fullname,
+            image:userExists.image }
+        ,   process.env.JWT_SECRET, { expiresIn: '1h' });
 
         res.status(200).json({message:"You will be redirected to Home", token : token });
     } catch (error) {
@@ -51,7 +68,6 @@ app.post('/login', async (req, res) => {
         res.status(500).json("Error logging in");
     }
 });
-app.use('/profilePics',express.static('profilePics'));
 
 
 module.exports = app;

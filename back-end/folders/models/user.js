@@ -21,7 +21,7 @@ const userSchema = new mongoose.Schema({
     },
     image:{
         type:String,
-        default : "profilePics/default.jfif"
+        default : "profilePics/default.jpg"
     }
 })
 module.exports=mongoose.model("User", userSchema)
