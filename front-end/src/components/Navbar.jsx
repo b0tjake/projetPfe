@@ -1,6 +1,8 @@
 import { Link, useNavigate } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
+
 // import useNivigate from "../hooks/useNavigate";
-import { useState } from "react";
+import { useState,useEffect } from "react";
 
 const Navbar = ({setLoading}) => {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
@@ -17,6 +19,21 @@ const Navbar = ({setLoading}) => {
     
   }
 
+  const [userData, setUserData] = useState(null)
+// const navi = useNavigate()
+useEffect(() => {
+    // const token = localStorage.getItem("token")
+    if(token){
+        const decoded = jwtDecode(token);
+        console.log('username : ' ,decoded.username )
+        console.log('fullname : ' ,decoded.fullname )
+        console.log('email : ' ,decoded.email )
+        console.log('image : ' ,decoded.image )
+        setUserData(decoded)
+    }
+  
+
+},[])
   return (
     <nav className="bg-white shadow-md w-full z-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -122,21 +139,10 @@ const Navbar = ({setLoading}) => {
               <>
                 <Link
                   to="/profile"
-                  className="text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-md text-sm font-medium flex items-center"
+                  className="text-gray-700 mr-3 px-3 py-2 rounded-md text-sm font-medium flex items-center"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5 mr-1"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  Profile
+                              {userData && <img className="w-10 h-10 rounded-full" src={`http://localhost:5000/${userData.image}`} alt="User Profile" />
+}
                 </Link>
                 <button onClick={logOut} className="text-white hover:bg-red-400 bg-red-600 dark:text-white dark:hover:bg-red-700 px-3 py-2 rounded-md text-sm font-medium flex items-center">
                   <svg

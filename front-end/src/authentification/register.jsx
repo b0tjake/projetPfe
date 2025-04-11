@@ -89,7 +89,7 @@ try {
       <div className="flex w-full card items-center md:items-stretch max-w-4xl p-2 pt-6 md:pt-2 h-full md:h-[90%] bg-white rounded-2xl shadow-lg">
         {/* Left Side */}
 
-        <div className="w-full md:w-1/2  flex h-fit  flex-col px-5 py-2">
+        <div className="w-full md:w-1/2  flex h-fit  flex-col px-5  ">
           <h1 className="text-3xl font-bold connection text-center text-gray-800">Join Jouala</h1>
           <p className="text-gray-500 text-center text-[16px] py-1 pt-2">join Jouala community now.</p>
 

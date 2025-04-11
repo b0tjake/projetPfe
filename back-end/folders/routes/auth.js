@@ -56,10 +56,14 @@ app.post('/login', async (req, res) => {
         }
 
         // Generate JWT token
-        const token = jwt.sign({ email: userExists.email,
+        const token = jwt.sign({ 
+            id : userExists._id,
+            email: userExists.email,
             username : userExists.username,
             fullname : userExists.fullname,
-            image:userExists.image }
+            image:userExists.image,
+            role:userExists.role, 
+        }
         ,   process.env.JWT_SECRET, { expiresIn: '1h' });
 
         res.status(200).json({message:"You will be redirected to Home", token : token });
