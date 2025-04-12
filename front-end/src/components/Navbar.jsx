@@ -40,10 +40,11 @@ useEffect(() => {
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <Link to="/" className="flex-shrink-0 flex items-center">
-              <img className="h-8 w-auto" src="" alt="Logo" />
-              <span className="ml-2 text-xl font-bold text-[#F4A261] hidden sm:block">
-                JOUALA
-              </span>
+              
+              <img className="w-20  rounded-full" src="/src/assets/images/joualaLogo.png" alt="Logo" />
+              {/* <span className="ml-2 text-xl font-bold text-[#F4A261] hidden  sm:flex sm:justify-center sm:items-center">
+                OUALA
+              </span> */}
             </Link>
 
             <div className="hidden sm:ml-6 sm:flex sm:space-x-4">
@@ -235,7 +236,7 @@ useEffect(() => {
               Home
             </Link>
             <Link
-              to="/add-post"
+              to="/addPost"
               className="border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
             >
               Add Post
