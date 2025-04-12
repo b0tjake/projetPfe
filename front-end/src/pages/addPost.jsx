@@ -72,7 +72,7 @@ export default function AddPost() {
       {user ? (
         <div className="mb-4 flex items-center">
           <img
-            src={user.image || "/default.png"} // تأكد من أن لديك صورة افتراضية
+            src={`http://localhost:5000/${user.image}`} // تأكد من أن لديك صورة افتراضية
             alt="Profile"
             className="w-12 h-12 rounded-full"
           />

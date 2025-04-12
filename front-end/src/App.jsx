@@ -6,6 +6,7 @@ import Navbar from './components/Navbar';
 import Footer from './components/footer';
 import Suggestions from './suggestions/suggestions';
 import Loading from './assets/loading';
+import AddPost from './pages/addPost';
 
 
 
@@ -20,6 +21,7 @@ function App() {
       {loading? <Loading/> : null}
       <Navbar setLoading={setLoading}/>
       <Routes>
+      <Route path="/addPost" element={<AddPost/>} />
       <Route path="/login" element={<Login setLoading={setLoading} />} />
       <Route path="/register" element={<Register setLoading={setLoading} />} />
       <Route path="/suggestions"element={<Suggestions/>}/>
