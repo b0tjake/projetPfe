@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom"; // لاستخدام التنقل
 
 export default function AddPost() {
   const [content, setContent] = useState("");
+  const [userId,setUserId] = useState("")
   const [image, setImage] = useState(null);
   const [error, setError] = useState("");
   const [user, setUser] = useState(null);
@@ -23,7 +24,6 @@ export default function AddPost() {
       }
     }
   }, []);
-
   // عند إرسال المنشور
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -40,7 +40,7 @@ export default function AddPost() {
     }
 
     const formData = new FormData();
-    formData.append("user", user._id); // إرسال معرف المستخدم
+    formData.append("user", user.id); // إرسال معرف المستخدم
     formData.append("content", content);
     if (image) formData.append("image", image);
 
