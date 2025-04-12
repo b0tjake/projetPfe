@@ -25,10 +25,10 @@ useEffect(() => {
     // const token = localStorage.getItem("token")
     if(token){
         const decoded = jwtDecode(token);
-        console.log('username : ' ,decoded.username )
-        console.log('fullname : ' ,decoded.fullname )
-        console.log('email : ' ,decoded.email )
-        console.log('image : ' ,decoded.image )
+        // console.log('username : ' ,decoded.username )
+        // console.log('fullname : ' ,decoded.fullname )
+        // console.log('email : ' ,decoded.email )
+        // console.log('image : ' ,decoded.image )
         setUserData(decoded)
     }
   
