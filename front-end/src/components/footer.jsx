@@ -8,20 +8,8 @@ const Footer = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 mb-6">
           <div className="lg:col-span-4">
             <div className="flex items-center mb-8">
-              <div className="bg-[#F4A261] p-3 rounded-xl mr-4 shadow-lg">
-                <svg
-                  className="w-10 h-10 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                  />
-                </svg>
+              <div className="bg-[#ffffff]  rounded-xl mr-4 shadow-lg">
+                <img src="/src/assets/images/joualaLogo.png" className="w-14 text-white" />
               </div>
               <h2 className="text-3xl font-bold tracking-tight">
                 Jou<span className="text-[#F4A261]">ala</span>
