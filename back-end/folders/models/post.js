@@ -14,14 +14,14 @@ const postSchema = new mongoose.Schema({
     ref: 'User', // Link to the User model
     required: true,
   },
-  // likes: [{
-  //   type: String,
-  //   ref: 'User', // Array of users who liked the post
-  // }],
-  // comments: [{
-  //   user: { type: String, ref: 'User' },
-  //   text: { type: String, required: true },
-  // }],
+  likes: [{
+    type: String,
+    ref: 'User', // Array of users who liked the post
+  }],
+  comments: [{
+    user: { type: String, ref: 'User' },
+    text: { type: String, required: true },
+  }],
   date: {
     type: Date,
     default: Date.now,

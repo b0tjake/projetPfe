@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
-import { useNavigate } from "react-router-dom"; // لاستخدام التنقل بعد نشر المنشور
+import { useNavigate } from "react-router-dom";
 
 export default function AddPost() {
   const [content, setContent] = useState("");
@@ -11,7 +11,6 @@ export default function AddPost() {
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
 
-  // استخراج بيانات المستخدم من التوكن
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
@@ -24,10 +23,10 @@ export default function AddPost() {
       }
     }
   }, []);
-  // عند إرسال المنشور
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(""); // مسح الأخطاء السابقة
+    setError(""); 
 
     if (!user) {
       setError("Please log in to create a post.");
@@ -40,7 +39,7 @@ export default function AddPost() {
     }
 
     const formData = new FormData();
-    formData.append("user", user.id); // إرسال معرف المستخدم
+    formData.append("user", user.id);
     formData.append("content", content);
     if (image) formData.append("image", image);
 
@@ -55,7 +54,7 @@ export default function AddPost() {
         alert("Post added successfully!");
         setContent("");
         setImage(null);
-        navigate("/"); // إعادة التوجيه إلى الصفحة الرئيسية بعد النشر
+        navigate("/");
       }
     } catch (err) {
       console.error("Error creating post:", err.response?.data || err.message);
@@ -72,7 +71,7 @@ export default function AddPost() {
       {user ? (
         <div className="mb-4 flex items-center">
           <img
-            src={`http://localhost:5000/${user.image}`} // تأكد من أن لديك صورة افتراضية
+            src={`http://localhost:5000/${user.image}`}
             alt="Profile"
             className="w-12 h-12 rounded-full"
           />
