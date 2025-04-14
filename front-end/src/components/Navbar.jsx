@@ -78,7 +78,7 @@ useEffect(() => {
                     clipRule="evenodd"
                   />
                 </svg>
-                Add Post
+                Create post
               </Link>
               <Link
                 to="/suggestions"
