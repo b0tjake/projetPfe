@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import Sidebar from "../components/sideBar";
 
 export default function Home() {
   const [posts, setPosts] = useState([]);
@@ -20,8 +21,12 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="max-w-3xl mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-6 text-center">Latest Posts</h1>
+    <div className="flex justify-center">
+      <div>
+      <Sidebar/>
+      </div>
+    <div className="max-w-3xl mx-auto p-4 ">
+
       {error && <p className="text-red-500">{error}</p>}
 
       {posts.length === 0 ? (
@@ -49,6 +54,7 @@ export default function Home() {
           </div>
         ))
       )}
+    </div>
     </div>
   );
 }
@@ -286,6 +292,189 @@ export default function Home() {
 //           ))
 //         )}
 //       </div>
+//     </div>
+//   );
+// }
+
+
+
+
+
+// import React, { useEffect, useState } from "react";
+// import axios from "axios";
+// import { HeartIcon, ChatBubbleOvalLeftIcon, PaperAirplaneIcon, BookmarkIcon, EllipsisHorizontalIcon, FaceSmileIcon } from "@heroicons/react/24/outline";
+// import { HeartIcon as HeartIconSolid } from "@heroicons/react/24/solid";
+// // import Sidebar from "../components/sideBar";
+
+// export default function Home() {
+//   const [posts, setPosts] = useState([]);
+//   const [error, setError] = useState("");
+//   const [commentContent, setCommentContent] = useState("");
+//   const [activeCommentPost, setActiveCommentPost] = useState(null);
+
+//   useEffect(() => {
+//     const fetchPosts = async () => {
+//       try {
+//         const response = await axios.get("http://localhost:5000/api/posts");
+//         setPosts(response.data);
+//       } catch (err) {
+//         setError("Failed to fetch posts.");
+//         console.error(err);
+//       }
+//     };
+
+//     fetchPosts();
+//   }, []);
+
+//   const handleLike = async (postId) => {
+//     try {
+//       const token = localStorage.getItem("token");
+//       const response = await axios.post(
+//         `http://localhost:5000/api/posts/${postId}/like`,
+//         {},
+//         {
+//           headers: {
+//             Authorization: `Bearer ${token}`
+//           }
+//         }
+//       );
+//       setPosts(posts.map(post => post._id === postId ? response.data : post));
+//     } catch (err) {
+//       console.error("Failed to like post", err);
+//     }
+//   };
+
+//   const handleAddComment = async (postId) => {
+//     if (!commentContent.trim()) return;
+    
+//     try {
+//       const token = localStorage.getItem("token");
+//       const response = await axios.post(
+//         `http://localhost:5000/api/posts/${postId}/comment`,
+//         { content: commentContent },
+//         {
+//           headers: {
+//             Authorization: `Bearer ${token}`
+//           }
+//         }
+//       );
+//       setPosts(posts.map(post => post._id === postId ? response.data : post));
+//       setCommentContent("");
+//       setActiveCommentPost(null);
+//     } catch (err) {
+//       console.error("Failed to add comment", err);
+//     }
+//   };
+
+//   return (
+//     <div className="max-w-3xl mx-auto p-4">
+//       {/* <Sidebar/> */}
+//       <h1 className="text-3xl font-bold mb-6 text-center">Latest Posts</h1>
+//       {error && <p className="text-red-500">{error}</p>}
+
+//       {posts.length === 0 ? (
+//         <p>No posts yet.</p>
+//       ) : (
+//         posts.map((post) => (
+//           <div key={post._id} className="bg-white p-4 shadow rounded-lg mb-6">
+//             {/* Post header */}
+//             <div className="flex items-center justify-between mb-3">
+//               <div className="flex items-center">
+//                 <img
+//                   src={`http://localhost:5000/${post.user?.image}`}
+//                   alt="User"
+//                   className="w-10 h-10 rounded-full mr-3"
+//                 />
+//                 <span className="font-semibold">{post.user?.username}</span>
+//               </div>
+//               <button>
+//                 <EllipsisHorizontalIcon className="h-5 w-5 text-gray-500" />
+//               </button>
+//             </div>
+
+//             {/* Post content */}
+//             <p className="mb-3">{post.content}</p>
+
+//             {/* Post image */}
+//             {post.image && (
+//               <img
+//                 src={`http://localhost:5000/${post.image}`}
+//                 alt="Post"
+//                 className="w-full rounded-lg mb-3"
+//               />
+//             )}
+
+//             {/* Post actions */}
+//             <div className="flex justify-between mb-2">
+//               <div className="flex space-x-4">
+//                 <button onClick={() => handleLike(post._id)}>
+//                   {post.likes.some(like => like._id === localStorage.getItem("userId")) ? (
+//                     <HeartIconSolid className="h-6 w-6 text-red-500" />
+//                   ) : (
+//                     <HeartIcon className="h-6 w-6" />
+//                   )}
+//                 </button>
+//                 <button onClick={() => setActiveCommentPost(activeCommentPost === post._id ? null : post._id)}>
+//                   <ChatBubbleOvalLeftIcon className="h-6 w-6" />
+//                 </button>
+//                 <button>
+//                   <PaperAirplaneIcon className="h-6 w-6" />
+//                 </button>
+//               </div>
+//               <button>
+//                 <BookmarkIcon className="h-6 w-6" />
+//               </button>
+//             </div>
+
+//             {/* Likes count */}
+//             {post.likes.length > 0 && (
+//               <p className="font-semibold text-sm mb-2">
+//                 {post.likes.length} {post.likes.length === 1 ? 'like' : 'likes'}
+//               </p>
+//             )}
+
+//             {/* Comments */}
+//             {post.comments.length > 0 && (
+//               <div className="mb-3">
+//                 {post.comments.slice(0, 2).map((comment, index) => (
+//                   <div key={index} className="flex mb-1">
+//                     <span className="font-semibold text-sm mr-2">{comment.user?.username}</span>
+//                     <span className="text-sm">{comment.content}</span>
+//                   </div>
+//                 ))}
+//                 {post.comments.length > 2 && (
+//                   <button className="text-gray-500 text-sm">
+//                     View all {post.comments.length} comments
+//                   </button>
+//                 )}
+//               </div>
+//             )}
+
+//             {/* Add comment */}
+//             {activeCommentPost === post._id && (
+//               <div className="flex items-center mt-2">
+//                 <FaceSmileIcon className="h-5 w-5 text-gray-400 mr-2" />
+//                 <input
+//                   type="text"
+//                   placeholder="Add a comment..."
+//                   className="flex-1 border rounded-full py-1 px-3 text-sm focus:outline-none"
+//                   value={commentContent}
+//                   onChange={(e) => setCommentContent(e.target.value)}
+//                 />
+//                 <button 
+//                   onClick={() => handleAddComment(post._id)}
+//                   className={`ml-2 text-blue-500 font-semibold text-sm ${
+//                     !commentContent.trim() ? 'opacity-50 cursor-default' : ''
+//                   }`}
+//                   disabled={!commentContent.trim()}
+//                 >
+//                   Post
+//                 </button>
+//               </div>
+//             )}
+//           </div>
+//         ))
+//       )}
 //     </div>
 //   );
 // }
