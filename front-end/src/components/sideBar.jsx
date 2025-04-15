@@ -253,7 +253,7 @@ export default function Sidebar() {
                   to="/messages"
                   className={`flex items-center p-3 rounded-lg ${
                     activeItem === "messages"
-                      ? "bg-indigo-100 text-indigo-700"
+                     ? "bg-[#CCE3F0] text-[#000]"
                       : "text-gray-700 hover:bg-gray-100"
                   }`}
                   onClick={() => {
@@ -270,7 +270,7 @@ export default function Sidebar() {
                   to="/notifications"
                   className={`flex items-center p-3 rounded-lg ${
                     activeItem === "notifications"
-                      ? "bg-indigo-100 text-indigo-700"
+                      ? "bg-[#CCE3F0] text-[#000]"
                       : "text-gray-700 hover:bg-gray-100"
                   }`}
                   onClick={() => {
@@ -287,7 +287,7 @@ export default function Sidebar() {
                   to="/settings"
                   className={`flex items-center p-3 rounded-lg ${
                     activeItem === "settings"
-                      ? "bg-indigo-100 text-indigo-700"
+                     ? "bg-[#CCE3F0] text-[#000]"
                       : "text-gray-700 hover:bg-gray-100"
                   }`}
                   onClick={() => {
