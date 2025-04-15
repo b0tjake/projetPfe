@@ -183,7 +183,7 @@ useEffect(() => {
           <div className="-mr-2 flex items-center sm:hidden">
             <button
               onClick={() => setShowMobileMenu(!showMobileMenu)}
-              className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
+              className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#CCE3F0]"
               aria-expanded="false"
             >
               <span className="sr-only">Open main menu</span>
@@ -227,23 +227,23 @@ useEffect(() => {
 
       {/* Mobile menu */}
       {showMobileMenu && (
-        <div className="sm:hidden absolute z-10 bg-[#fff] w-full flex justify-center">
+        <div className="sm:hidden absolute z-10 bg-[#FCFCFB] w-full flex justify-center">
           <div className="pt-2 pb-3 space-y-1">
             <Link
               to="/"
-              className="border-transparent text-gray-600 hover:bg-gray-50 hover:border-[#CCE3F0] hover:text-gray-800 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
+              className="border-transparent text-gray-700 hover:bg-gray-50 hover:border-[#CCE3F0] hover:text-[#000] block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
             >
               Home
             </Link>
             <Link
               to="/addPost"
-              className="border-transparent text-gray-600 hover:bg-gray-50 hover:border-[#CCE3F0] hover:text-gray-800 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
+              className="border-transparent text-gray-700 hover:bg-gray-50 hover:border-[#CCE3F0] hover:text-[#000] block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
             >
               Add Post
             </Link>
             <Link
               to="/suggestions"
-              className="border-transparent text-gray-600 hover:bg-gray-50 hover:border-[#CCE3F0] hover:text-gray-800 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
+              className="border-transparent text-gray-700 hover:bg-gray-50 hover:border-[#CCE3F0] hover:text-[#000] block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
             >
               Suggestions
             </Link>
@@ -251,11 +251,11 @@ useEffect(() => {
               <>
                 <Link
                   to="/profile"
-                  className="border-transparent text-gray-600 hover:bg-gray-50 hover:border-[#CCE3F0] hover:text-gray-800 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
+                  className="border-transparent text-gray-700 hover:bg-gray-50 hover:border-[#CCE3F0] hover:text-[#000] block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
                 >
                   Profile
                 </Link>
-                <button onClick={logOut} className="border-transparent text-gray-600 hover:bg-gray-50 hover:border-[#CCE3F0] hover:text-gray-800 block pl-3 pr-4 py-2 border-l-4 text-base font-medium w-full text-left">
+                <button onClick={logOut} className="border-transparent text-gray-700 hover:bg-gray-50 hover:border-[#CCE3F0] hover:text-[#000] block pl-3 pr-4 py-2 border-l-4 text-base font-medium w-full text-left">
                   Logout
                 </button>
               </>
@@ -263,13 +263,13 @@ useEffect(() => {
               <>
                 <Link
                   to="/login"
-                  className="border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
+                  className="border-transparent text-gray-700 hover:bg-gray-50 hover:border-[#CCE3F0] hover:text-[#000] block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
                 >
                   Login
                 </Link>
                 <Link
                   to="/register"
-                  className="border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
+                  className="border-transparent text-gray-700 hover:bg-gray-50 hover:border-[#CCE3F0] hover:text-[#000] block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
                 >
                   Register
                 </Link>

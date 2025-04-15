@@ -69,7 +69,7 @@ export default function AddPost() {
       });
 
       if (response.status === 201) {
-        alert("Post added successfully!");
+        // alert("Post added successfully!");
         setContent("");
         setImage(null);
         setPreview(null);
@@ -79,7 +79,7 @@ export default function AddPost() {
       console.error("Error creating post:", err.response?.data || err.message);
       setError(err.response?.data?.message || "Error creating post, please try again.");
     } finally {
-      setIsSubmitting(false);
+      // setIsSubmitting(false);
     }
   };
 

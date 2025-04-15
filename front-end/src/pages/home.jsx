@@ -21,8 +21,8 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="flex justify-center">
-      <div>
+    <div className="flex justify-center bg-[#FCFCFB]">
+      <div className="">
       <Sidebar/>
       </div>
     <div className="max-w-3xl mx-auto p-4">
@@ -33,7 +33,7 @@ export default function Home() {
         <p>No posts yet.</p>
       ) : (
         posts.map((post) => (
-          <div key={post._id} className="bg-white p-4 shadow rounded-lg mb-4">
+          <div key={post._id} className="bg-white p-4 shadow rounded-lg mb-3">
             <div className="flex items-center mb-2">
               <img
                 src={`http://localhost:5000/${post.user?.image}`}

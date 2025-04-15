@@ -63,7 +63,7 @@ export default function Sidebar() {
 
       {/* Sidebar */}
       <div
-        className={`fixed md:relative z-50 md:z-auto w-80 h-screen mt-3 bg-white ms:w-64 shadow-md transform ${
+        className={`fixed md:relative z-50 md:z-auto w-80 h-screen mt-3.5 bg-white ms:w-64 shadow-lg transform ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         } transition-transform duration-300 ease-in-out`}
       >
