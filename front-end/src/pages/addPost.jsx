@@ -84,9 +84,9 @@ export default function AddPost() {
   };
 
   return (
-    <div className="h-screen">
-    <div className="max-w-2xl mx-auto mt-28 p-6 bg-white rounded-lg shadow-md">
-      <h1 className="text-3xl font-bold mb-6 text-center text-indigo-700">Create a New Post</h1>
+    <div className="h-full p-10 bg-[#fcfcfb]">
+    <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-md">
+      <h1 className="text-3xl font-bold mb-6 text-center text-[#0077B6]">Create a new post</h1>
 
       {error && (
         <div className="mb-4 p-3 bg-red-100 border-l-4 border-red-500 text-red-700">
@@ -100,7 +100,7 @@ export default function AddPost() {
             <img
               src={`http://localhost:5000/${user.image}`}
               alt="Profile"
-              className="w-12 h-12 rounded-full object-cover border-2 border-indigo-200"
+              className="w-12 h-12 rounded-full object-cover border-2 border-[#F2A261]"
             />
             <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></span>
           </div>
@@ -119,7 +119,7 @@ export default function AddPost() {
             placeholder="What's on your mind?"
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#F2A261] focus:border-[#F2A261]"
             rows="5"
           />
           <div className="absolute bottom-3 right-3 text-sm text-gray-500">
@@ -149,7 +149,7 @@ export default function AddPost() {
 
         <div className="flex items-center justify-between">
           <label className="flex items-center px-4 py-2 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-200">
-            <FiImage className="text-indigo-600 mr-2" />
+            <FiImage className="text-[#0077B6] mr-2" />
             <span className="text-gray-700">Add Image</span>
             <input
               type="file"
@@ -164,8 +164,8 @@ export default function AddPost() {
             disabled={isSubmitting}
             className={`flex items-center px-6 py-2 rounded-lg ${
               isSubmitting
-                ? "bg-indigo-400"
-                : "bg-indigo-600 hover:bg-indigo-700"
+                ? "bg-[#0077B6]"
+                : "bg-[#0077B6] hover:bg-[#006BA3]"
             } text-white font-medium`}
           >
             {isSubmitting ? (

@@ -35,7 +35,7 @@ useEffect(() => {
 
 },[])
   return (
-    <nav className="bg-white shadow-md w-full z-10">
+    <nav className="bg-white shadow-md w-full fixed z-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
@@ -231,19 +231,19 @@ useEffect(() => {
           <div className="pt-2 pb-3 space-y-1">
             <Link
               to="/"
-              className="border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
+              className="border-transparent text-gray-600 hover:bg-gray-50 hover:border-[#CCE3F0] hover:text-gray-800 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
             >
               Home
             </Link>
             <Link
               to="/addPost"
-              className="border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
+              className="border-transparent text-gray-600 hover:bg-gray-50 hover:border-[#CCE3F0] hover:text-gray-800 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
             >
               Add Post
             </Link>
             <Link
               to="/suggestions"
-              className="border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
+              className="border-transparent text-gray-600 hover:bg-gray-50 hover:border-[#CCE3F0] hover:text-gray-800 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
             >
               Suggestions
             </Link>
@@ -251,11 +251,11 @@ useEffect(() => {
               <>
                 <Link
                   to="/profile"
-                  className="border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
+                  className="border-transparent text-gray-600 hover:bg-gray-50 hover:border-[#CCE3F0] hover:text-gray-800 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
                 >
                   Profile
                 </Link>
-                <button onClick={logOut} className="border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800 block pl-3 pr-4 py-2 border-l-4 text-base font-medium w-full text-left">
+                <button onClick={logOut} className="border-transparent text-gray-600 hover:bg-gray-50 hover:border-[#CCE3F0] hover:text-gray-800 block pl-3 pr-4 py-2 border-l-4 text-base font-medium w-full text-left">
                   Logout
                 </button>
               </>

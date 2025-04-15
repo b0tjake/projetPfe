@@ -23,6 +23,7 @@ function App() {
       <BrowserRouter>
       {loading? <Loading/> : null}
       <Navbar setLoading={setLoading}/>
+      <div className="pt-16">
       <Routes>
       <Route path="/" element={<Home/>} />
       <Route path="/addPost" element={<AddPost/>} />
@@ -30,6 +31,7 @@ function App() {
       <Route path="/login" element={<Login setLoading={setLoading} />} />
       <Route path="/register" element={<Register setLoading={setLoading} />} />
       </Routes>
+      </div>
       <Footer/>
       </BrowserRouter>
 
