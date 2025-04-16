@@ -66,7 +66,7 @@ app.post('/login', async (req, res) => {
         }
         ,   process.env.JWT_SECRET, { expiresIn: '1h' });
 
-        res.status(200).json({message:"You will be redirected to Home", token : token });
+        res.status(200).json({message:"You will be redirected to Home", token : token ,role : userExists.role});
     } catch (error) {
         console.log("Error during login", error);
         res.status(500).json("Error logging in");

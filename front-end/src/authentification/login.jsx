@@ -24,17 +24,24 @@ export default function Login({setLoading}) {
     const data = { email, password };
     try {
       const res = await axios.post("http://localhost:5000/api/auth/login", data);
-      console.log(res);
+      // console.log(res);
       setLoading(true)
 
       
       if (res.data.token) {
+        console.log("role :",  res.data.role)
         localStorage.setItem("token", res.data.token);
         setMessage(res.data.message);
         seterrMessage("");
         setTimeout(()=> {
+          if (res.data.role === "admin") {
+            navigate("/addSuggestion");
+          // setLoading(false)
+          }
+          else if (res.data.role === "user") {
           navigate("/"); 
-          setLoading(false)
+        }
+        setLoading(false)
         },1500)
 
 

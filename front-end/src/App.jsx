@@ -8,6 +8,7 @@ import Suggestions from './suggestions/suggestions';
 import Loading from './assets/loading';
 import AddPost from './pages/addPost';
 import Home from './pages/home';
+import AddSuggestion from './admin/addSuggestion';
 
 
 
@@ -30,6 +31,8 @@ function App() {
       <Route path="/suggestions"element={<Suggestions/>}/>
       <Route path="/login" element={<Login setLoading={setLoading} />} />
       <Route path="/register" element={<Register setLoading={setLoading} />} />
+      <Route path="/addSuggestion" element={<AddSuggestion/>} />
+      
       </Routes>
       </div>
       <Footer/>
