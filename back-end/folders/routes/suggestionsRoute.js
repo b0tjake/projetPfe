@@ -2,7 +2,7 @@
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
-const suggestion = require('../models/suggestions');  // import your suggestion model
+const Suggestion = require('../models/suggestions');  // import your suggestion model
 
 const app = express();
 
@@ -22,7 +22,7 @@ app.post("/addSuggestion", upload.single('image'), async (req, res) => {
     const { title, description, cost, rating } = req.body;
     const image = req.file ? req.file.path : null;  // Check if the file exists
     try {
-        const checkUser = await suggestion.findOne({ 'rating.userId': rating.userId });
+        const checkUser = await Suggestion.findOne({ 'rating.userId': rating.userId });
         if (checkUser) {
             return res.status(400).json({ message: "You have already added a suggestion!" });
         }
@@ -36,7 +36,7 @@ app.post("/addSuggestion", upload.single('image'), async (req, res) => {
 });
 app.post('/getSuggestion', async (req, res) => {
     try {
-        const suggestions = await suggestion.find();
+        const suggestions = await Suggestion.find();
         if (suggestions.length === 0) {
             return res.status(404).json({ message: "No suggestions found" });
         }
@@ -45,6 +45,65 @@ app.post('/getSuggestion', async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 });
+app.post('/upVote', async (req, res) => {
+    const { placeId, userId } = req.body;
+
+    try {
+        const suggestion = await Suggestion.findById(placeId);
+
+        if (!suggestion) {
+            return res.status(404).json({ message: 'Place not found' });
+        }
+
+
+        if (suggestion.upvoters.includes(userId)) {
+            return res.status(400).json({ message: 'You already upvoted this place' });
+        }
+
+        // Remove downvote if exists
+        suggestion.downvoters = suggestion.downvoters.filter(
+            (id) => id.toString() !== userId
+        );
+
+        // Add upvote
+        suggestion.upvoters.push(userId);
+        suggestion.rating += 1;
+
+        await suggestion.save();
+
+        res.status(200).json({
+            message: 'Upvoted successfully',
+            rating: suggestion.rating,
+            upvoters: suggestion.upvoters.length,
+        });
+
+    } catch (err) {
+        console.error('Error upvoting:', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+app.post('/downVote',async(req,res) => {
+    const {placeId,userId} = req.body
+    try{
+        const suggestion = await Suggestion.findById(placeId)
+        if(!suggestion){
+            return res.status(404).json({message: 'Place not found'})
+        }
+
+        if(suggestion.downvoters.includes(userId)){
+            return res.status(400).json({message: 'You already downvoted this place'})
+        }
+        suggestion.upvoters = suggestion.upvoters.filter((id) => id.toString() !== userId)
+        suggestion.downvoters.push(userId)
+        suggestion.rating -= 1
+        await suggestion.save()
+        res.status(200).json({message: "downVote successfully", rating: suggestion.rating, downvoters: suggestion.downvoters.length})
+    }
+    catch(err){
+        console.error('Error downvoting:', err)
+        res.status(500).json({message: 'Server error'})
+    }
+})
 
 
 
