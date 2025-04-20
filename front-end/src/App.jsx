@@ -9,6 +9,7 @@ import Loading from './assets/loading';
 import AddPost from './pages/addPost';
 import Home from './pages/home';
 import AddSuggestion from './admin/addSuggestion';
+import Profile from './profile/profile';
 
 
 
@@ -29,6 +30,7 @@ function App() {
       <Route path="/" element={<Home/>} />
       <Route path="/addPost" element={<AddPost/>} />
       <Route path="/suggestions"element={<Suggestions/>}/>
+      <Route path="/profile"element={<Profile/>}/>
       <Route path="/login" element={<Login setLoading={setLoading} />} />
       <Route path="/register" element={<Register setLoading={setLoading} />} />
       <Route path="/addSuggestion" element={<AddSuggestion/>} />

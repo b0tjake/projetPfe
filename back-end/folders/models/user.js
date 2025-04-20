@@ -27,6 +27,22 @@ const userSchema = new mongoose.Schema({
         type:String,
         enum : ["admin","user"],
         default : "user"
-    }
+    },
+    Profession:{
+        type:String,
+        default : "add your profession to your profile"
+    },
+    city:{
+        type:String,
+        default : "add a city where you live to your profile"
+    },
+    phone:{
+        type:String,
+        default : "add a phone number to your profile"
+    },
+    bio:{
+        type:String,
+        default : "add a BIO to your profile"
+    },
 })
 module.exports=mongoose.model("User", userSchema)

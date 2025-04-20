@@ -41,14 +41,16 @@ try {
   });
 
     console.log(res)
-    setLoading(true)
-    setError("");
     setMessage(res.data.message)
+    setTimeout(() => {
+    setLoading(true)
+    }, 2000)
+    setError("");
     // console.log(message)
     setTimeout(()=> {
       navi("/login")
       setLoading(false)
-    },1000)
+    },3500)
   }
   catch(error){
     console.log(error.response.data.message);

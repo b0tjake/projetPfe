@@ -13,6 +13,7 @@ export default function PlaceSuggestions() {
         const getPlaces = async () => {
             try {
                 const res = await axios.post("http://localhost:5000/api/suggestions/getSuggestion");
+                // console.log(res.data.upvoters)
                 setPlaceData(res.data);
 
             } catch (error) {
@@ -21,7 +22,7 @@ export default function PlaceSuggestions() {
         };
         getPlaces();
     }, []);
-
+    
     useEffect(() => {
         if (token) {
             const decoded = jwtDecode(token);
@@ -60,6 +61,7 @@ export default function PlaceSuggestions() {
                     if (place._id === placeId) {
                         return { ...place, rating: place.rating - 1 };
                     }
+
                     return place;
                 })
             })
