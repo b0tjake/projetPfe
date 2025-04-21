@@ -91,7 +91,7 @@ export default function Sidebar() {
                 />
               </div>
               <div className="pt-10 pb-4 px-4">
-                <Link to="profile">
+                <Link to={`profile/${user.id}`}>
                   <h1 className="font-medium text-[#000]" t>
                     {user.fullname}
                   </h1>

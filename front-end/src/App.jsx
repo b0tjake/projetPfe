@@ -15,6 +15,7 @@ import Profile from './profile/profile';
 
 
 
+
 function App() {
   // const a = 2
 
@@ -30,7 +31,7 @@ function App() {
       <Route path="/" element={<Home/>} />
       <Route path="/addPost" element={<AddPost/>} />
       <Route path="/suggestions"element={<Suggestions/>}/>
-      <Route path="/profile"element={<Profile/>}/>
+      <Route path="/profile/:id"element={<Profile/>}/>
       <Route path="/login" element={<Login setLoading={setLoading} />} />
       <Route path="/register" element={<Register setLoading={setLoading} />} />
       <Route path="/addSuggestion" element={<AddSuggestion/>} />

@@ -1,32 +1,74 @@
 import { useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
+import { useParams } from "react-router-dom";
+import axios from "axios";
 
 const Profile = () => {
   const [userData, setUserData] = useState(null);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      setError("please Login to see your profile");
-      return;
-    }
+  const [bio, setBio] = useState("");
+  const [city, setCity] = useState("");
+  const [phone, setPhone] = useState("");
+  const [Profession, setProfession] = useState("");
 
+  const { id } = useParams();
+  const token = localStorage.getItem("token");
+  let decoded = null;
+
+  if (token) {
     try {
-      const decoded = jwtDecode(token);
-      setUserData(decoded);
+      decoded = jwtDecode(token);
     } catch (err) {
       console.error("Invalid token", err);
-      setError("Invalid token.");
+      setError("Invalid token");
     }
-  }, []);
+  } else {
+    setError("Please login to view the profile");
+  }
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await axios.get(`http://localhost:5000/api/profile/profile/${id}`);
+        setUserData(res.data.user);
+      } catch (err) {
+        console.log(err);
+        setError("Couldn't fetch user data");
+      }
+    };
+
+    fetchUser();
+  }, [id]);
+
+  useEffect(() => {
+    if (userData) {
+      setBio(userData.bio || "");
+      setCity(userData.city || "");
+      setPhone(userData.phone || "");
+      setProfession(userData.Profession || "");
+    }
+  }, [userData]);
+
+  const handleSaveChanges = async () => {
+    try {
+      await axios.put(`http://localhost:5000/api/profile/saveChanges/${id}`, {
+        bio,
+        city,
+        phone,
+        Profession,
+      });
+    } catch (err) {
+      console.log(err);
+      setError("Couldn't save changes");
+    }
+  };
 
   if (error) return <div className="text-red-500 text-center py-10">{error}</div>;
   if (!userData) return <div className="text-center mt-10">Loading...</div>;
 
   return (
     <div className="max-w-4xl mx-auto mt-10 bg-white rounded-xl shadow-xl overflow-hidden">
-      {/* Profile Header */}
       <div className="relative bg-gradient-to-r from-orange-400 to-orange-600 h-48">
         <div className="absolute bottom-[-2rem] left-8 flex items-center gap-4">
           <img
@@ -42,50 +84,105 @@ const Profile = () => {
 
       <div className="pt-20 px-8 pb-10">
         <h2 className="text-3xl font-bold text-gray-800 mb-2">{userData.fullname}</h2>
-        <p className="text-lg text-gray-600 mb-1">
-          {userData.profession}
-        </p>
-        <p className="text-sm text-gray-500 mb-4">{  userData.city}</p>
 
         <div className="bg-gray-50 rounded-xl shadow-inner p-6">
-          <table className="table-auto w-full text-left text-sm text-gray-700">
+          <table className="w-full text-left text-sm text-gray-700">
             <tbody>
               <tr className="border-b">
                 <td className="py-2 font-medium w-1/3">Full Name</td>
                 <td className="py-2">{userData.fullname}</td>
               </tr>
+
               <tr className="border-b">
                 <td className="py-2 font-medium">Email</td>
                 <td className="py-2">{userData.email}</td>
               </tr>
+
               <tr className="border-b">
                 <td className="py-2 font-medium">Profession</td>
-                <td className="py-2">{userData.profession}</td>
+                <td className="py-2">
+                  {decoded && userData._id === decoded.id ? (
+                    <input
+                      type="text"
+                      className="w-full text-sm text-gray-700 border border-gray-300 rounded-lg px-2 py-1 focus:outline-none"
+                      value={Profession}
+                      onChange={(e) => setProfession(e.target.value)}
+                      placeholder="Enter your profession"
+                    />
+                  ) : (
+                    userData.Profession === "add your profession to your profile" ? "" : userData.Profession
+                  )}
+                </td>
               </tr>
+
               <tr className="border-b">
                 <td className="py-2 font-medium">City</td>
-                <td className="py-2">{userData.city || "add a city where you live to your profile"}</td>
+                <td className="py-2">
+                  {decoded && userData._id === decoded.id ? (
+                    <input
+                      type="text"
+                      className="w-full text-sm text-gray-700 border border-gray-300 rounded-lg px-2 py-1 focus:outline-none"
+                      value={city}
+                      onChange={(e) => setCity(e.target.value)}
+                      placeholder="Enter your city"
+                    />
+                  ) : (
+                    userData.city === "add a city where you live to your profile" ? "" : userData.city
+                  )}
+                </td>
               </tr>
+
               <tr className="border-b">
                 <td className="py-2 font-medium">Phone</td>
-                <td className="py-2">{userData.phone || "add a phone number to your profile"}</td>
+                <td className="py-2">
+                  {decoded && userData._id === decoded.id ? (
+                    <input
+                      type="text"
+                      className="w-full text-sm text-gray-700 border border-gray-300 rounded-lg px-2 py-1 focus:outline-none"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="Enter your phone number"
+                    />
+                  ) : (
+                    userData.phone === "add a phone number to your profile" ? "" : userData.phone
+                  )}
+                </td>
               </tr>
+
               <tr>
                 <td className="py-2 font-medium">Bio</td>
                 <td className="py-2">
-                  {userData.bio ||
-                    "add a BIO to your profile"}
+                  {decoded && userData._id === decoded.id ? (
+                    <textarea
+                      className="w-full text-sm text-gray-700 border border-gray-300 rounded-lg px-2 py-1 focus:outline-none resize-none overflow-hidden"
+                      value={bio}
+                      onChange={(e) => {
+                        setBio(e.target.value);
+                        e.target.style.height = "auto";
+                        e.target.style.height = `${e.target.scrollHeight}px`;
+                      }}
+                      placeholder="Enter your bio"
+                      rows={1}
+                    />
+                  ) : (
+                    userData.bio === "add a BIO to your profile" ? "" : userData.bio
+                  )}
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
 
-        <div className="mt-6 flex gap-4">
-          <button className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
-            Edit Profile
-          </button>
-        </div>
+        {decoded && userData._id === decoded.id && (
+          <div className="mt-6 flex gap-4">
+            <button
+              onClick={handleSaveChanges}
+              className="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600"
+            >
+              Save Changes
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

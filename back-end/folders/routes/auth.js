@@ -64,6 +64,11 @@ app.post('/login', async (req, res) => {
             fullname : userExists.fullname,
             image:userExists.image,
             role:userExists.role, 
+            Profession:userExists.Profession,
+            city:userExists.city,
+            phone:userExists.phone,
+            bio:userExists.bio
+            
         }
         ,   process.env.JWT_SECRET, { expiresIn: '1h' });
 
