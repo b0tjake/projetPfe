@@ -6,6 +6,7 @@ import axios from "axios";
 const Profile = () => {
   const [userData, setUserData] = useState(null);
   const [error, setError] = useState(null);
+  const [saveChanges, setSaveChanges] = useState("");
 
   const [bio, setBio] = useState("");
   const [city, setCity] = useState("");
@@ -13,12 +14,16 @@ const Profile = () => {
   const [Profession, setProfession] = useState("");
 
   const { id } = useParams();
+  
+  const [decoded, setDecoded] = useState(null);
+
+useEffect(() => {
   const token = localStorage.getItem("token");
-  let decoded = null;
 
   if (token) {
     try {
-      decoded = jwtDecode(token);
+      const decodedToken = jwtDecode(token);
+      setDecoded(decodedToken);
     } catch (err) {
       console.error("Invalid token", err);
       setError("Invalid token");
@@ -26,6 +31,8 @@ const Profile = () => {
   } else {
     setError("Please login to view the profile");
   }
+}, []);
+
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -58,6 +65,7 @@ const Profile = () => {
         phone,
         Profession,
       });
+      setSaveChanges("Changes saved successfully!");
     } catch (err) {
       console.log(err);
       setError("Couldn't save changes");
@@ -174,13 +182,14 @@ const Profile = () => {
         </div>
 
         {decoded && userData._id === decoded.id && (
-          <div className="mt-6 flex gap-4">
+          <div className="mt-6 flex flex-col gap-4">
             <button
               onClick={handleSaveChanges}
-              className="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600"
+              className="bg-green-500 text-white w-40 px-6 py-2 rounded-lg hover:bg-green-600"
             >
               Save Changes
             </button>
+            {saveChanges && <span className="text-green-500">{saveChanges}</span>}
           </div>
         )}
       </div>

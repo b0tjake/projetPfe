@@ -19,10 +19,10 @@ app.get('/profile/:id', async (req, res) => {
 })
 
 app.put('/saveChanges/:id' , async (req,res) => {
-    const {bio,city,phone,profession} = req.body
+    const {bio,city,phone,Profession} = req.body
     try{
-        const User = await user.findByIdAndUpdate(req.params.id,{bio,city,phone,profession} , {new:true})
-        res.status(200).json({message : "User updated", user : User})
+        const User = await user.findByIdAndUpdate(req.params.id,{bio,city,phone,Profession} , {new:true})
+        res.status(200).json({message : "changes are saved", user : User})
     }
     catch (err) {
         console.log("Couldn't update user", err);
