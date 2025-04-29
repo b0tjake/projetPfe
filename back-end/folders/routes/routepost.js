@@ -42,8 +42,8 @@ router.post('/', postUpload.single('image'), async (req, res) => {
 router.get('/', async (req, res) => {
   try {
     const posts = await Post.find()
-      .populate('user', 'fullname image')
-      .populate('comments.user', 'fullname image');
+      .populate('user', 'id fullname image')
+      .populate('comments.user', 'id fullname image');
 
     // نحسب عدد اللايكات والكومنتات لكل بوست
     const updatedPosts = posts.map(post => ({

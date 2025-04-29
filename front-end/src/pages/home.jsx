@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import Sidebar from "../components/sideBar";
@@ -119,12 +120,15 @@ export default function Home() {
             posts.map((post) => (
               <div key={post._id} className="bg-white p-6 rounded-xl shadow-sm mb-6 border border-gray-100">
                 <div className="flex items-center mb-4">
+                  <Link to={`profile/${post.user?._id}`}>
                   <img
                     src={`http://localhost:5000/${post.user?.image}`}
                     alt="User"
                     className="w-12 h-12 rounded-full mr-3 object-cover border-2 border-white shadow"
                   />
-                  <span className="font-semibold text-gray-800">{post.user?.fullname}</span>
+                  
+                  </Link>
+                  <a href={`profile/${post.user?._id}`} className="font-semibold text-gray-800">{post.user?.fullname}</a>
                 </div>
 
                 <p className="mb-4 text-gray-700">{post.content}</p>
@@ -215,14 +219,17 @@ export default function Home() {
                   <div className="mt-4 space-y-3">
                     {post.comments.map((comment, index) => (
                       <div key={index} className="flex items-start">
+                        <Link to={`profile/${comment.user?._id}`}>
                         <img
                           src={`http://localhost:5000/${comment.user?.image}`}
                           alt="User"
                           className="w-8 h-8 rounded-full mr-2 object-cover"
                         />
+                        
+                        </Link>
                         {console.log(posts)}
                         <div className="bg-gray-50 p-3 rounded-lg flex-1">
-                          <div className="font-semibold text-sm">{comment.user?.fullname}</div>
+                          <a href={`profile/${comment.user?._id}`} className="font-semibold text-sm">{comment.user?.fullname}</a>
                           <p className="text-sm text-gray-700">{comment.text}</p>
                         </div>
                       </div>
