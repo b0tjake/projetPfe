@@ -42,49 +42,70 @@ router.post('/', postUpload.single('image'), async (req, res) => {
 router.get('/', async (req, res) => {
   try {
     const posts = await Post.find()
-      .populate('user', 'username fullname image') // Populate user info (username, fullname, image)
-      .populate('comments.user', 'username image') // Populate commenter user info
-      .sort({ date: -1 });
-    res.json(posts);
+      .populate('user', 'fullname image')
+      .populate('comments.user', 'fullname image');
+
+    // نحسب عدد اللايكات والكومنتات لكل بوست
+    const updatedPosts = posts.map(post => ({
+      ...post.toObject(),
+      likesCount: post.likes.length,
+      commentsCount: post.comments,
+    }));
+
+    res.json(updatedPosts);
   } catch (err) {
-    res.status(400).json({ message: 'Error fetching posts  ' + err });
+    res.status(500).json({ message: 'Error fetching posts', err });
   }
 });
 
-// Route to like a post
-router.put('/:id/like', async (req, res) => {
-  try {
-    const post = await Post.findById(req.params.id);
 
-    if (post.likes.includes(req.body.user)) {
-      post.likes = post.likes.filter((like) => like !== req.body.user);
+// Route to like a post
+router.post('/like', async (req, res) => {
+ const {postId,userId} = req.body
+  try {
+    const post = await Post.findById(postId);
+
+    if (post.likes.includes(userId)) {
+      post.likes = post.likes.filter((like) => like.toString() !== userId);
     } else {
-      post.likes.push(req.body.user);
+      post.likes.push(userId);
     }
 
     await post.save();
     res.json(post);
   } catch (err) {
-    res.status(400).json({ message: 'Error liking post' });
+    res.status(400).json({ message: 'Error liking post',err });
   }
 });
 
 // Route to add a comment
-router.post('/:id/comment', async (req, res) => {
+// Route to add a comment
+router.post('/comment', async (req, res) => {
+  const { postId, userId, textValue } = req.body;
+
   try {
-    const post = await Post.findById(req.params.id);
+    const post = await Post.findById(postId);
     const comment = {
-      user: req.body.user,
-      text: req.body.text,
+      user: userId,
+      text: textValue,
     };
 
     post.comments.push(comment);
     await post.save();
 
-    res.json(post);
+    // Populate بعد ما كتسالي
+    const updatedPost = await Post.findById(postId)
+      .populate('comments.user', 'fullname image');
+
+      res.json({
+        comments: updatedPost.comments,
+        commentsCount: updatedPost.comments.length
+      });
+       // رجع فقط الكومنتات populated
   } catch (err) {
-    res.status(400).json({ message: 'Error adding comment' });
+    res.status(400).json({ message: 'Error adding comment', err });
   }
 });
+
 
 module.exports = router;

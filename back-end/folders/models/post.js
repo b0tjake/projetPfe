@@ -13,11 +13,13 @@ const postSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User', // Link to the User model
     required: true,
+    
   },
   likes: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User', // Array of users who liked the post
-  }],
+  }
+],
   comments: [{
     user: { type: mongoose.Schema.Types.ObjectId,
             ref: 'User'
