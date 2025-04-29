@@ -47,7 +47,7 @@ router.get('/', async (req, res) => {
       .sort({ date: -1 });
     res.json(posts);
   } catch (err) {
-    res.status(400).json({ message: 'Error fetching posts' });
+    res.status(400).json({ message: 'Error fetching posts  ' + err });
   }
 });
 

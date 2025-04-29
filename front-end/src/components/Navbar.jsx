@@ -252,7 +252,7 @@ useEffect(() => {
             {token ? (
               <>
                 <Link
-                  to="/profile"
+                  to={`/profile/${userData.id}`}
                   className="border-transparent text-gray-700 hover:bg-gray-50 hover:border-[#CCE3F0] hover:text-[#000] block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
                 >
                   Profile
