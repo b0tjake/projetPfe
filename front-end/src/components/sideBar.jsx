@@ -1,17 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
 import { Link, useNavigate } from "react-router-dom";
-import {
-  FiHome,
-  FiUser,
-  FiSettings,
-  FiLogOut,
-  FiMessageSquare,
-  FiBell,
-  FiMenu,
-  FiX,
-  FiChevronRight,
-} from "react-icons/fi";
+// import {
+//   FiHome,
+//   FiUser,
+//   FiSettings,
+//   FiLogOut,
+//   FiMessageSquare,
+//   FiBell,
+//   FiMenu,
+//   FiX,
+//   FiChevronRight,
+// } from "react-icons/fi";
 
 export default function Sidebar() {
   const [user, setUser] = useState(null);
@@ -31,56 +31,19 @@ export default function Sidebar() {
     }
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/login");
-  };
-
-  // Close sidebar when clicking on a link (for mobile)
-  const handleLinkClick = () => {
-    if (window.innerWidth < 768) {
-      setSidebarOpen(false);
-    }
-  };
+  // const handleLogout = () => {
+  //   localStorage.removeItem("token");
+  //   navigate("/login");
+  // };
 
   return (
     <>
-      {/* Mobile menu button */}
-      <button
-        onClick={() => setSidebarOpen(!sidebarOpen)}
-        className="md:hidden fixed top-71 left-0 mt-3 z-50 p-2 bg-white rounded-md shadow-md"
-      >
-        {sidebarOpen ? <FiX size={24} /> : <FiChevronRight size={17} />}
-      </button>
-
-      {/* Overlay for mobile */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
-      {/* Sidebar */}
       <div
-        className={`fixed md:relative z-50 md:z-auto w-80 h-screen mt-3.5 bg-white ms:w-64 shadow-lg transform ${
+        className={`fixed md:relative z-40 md:z-auto w-80 mt-3.5 bg-white ms:w-64 shadow-lg transform ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         } transition-transform duration-300 ease-in-out`}
       >
         <div className="p-4 flex flex-col h-full">
-          {/* {user && (
-            <div className="flex items-center p-3 mb-6 bg-indigo-50 rounded-lg">
-              <img
-                src={`http://localhost:5000/${user.image}`}
-                alt="Profile"
-                className="w-10 h-10 rounded-full object-cover border-2 border-indigo-200"
-              />
-              <div className="ml-3">
-                <p className="font-medium text-gray-800">{user.fullname}</p>
-                <p className="text-xs text-gray-500">@{user.username}</p>
-              </div>
-            </div>
-          )} */}
           {user && (
             <div className="w-full bg-white rounded-xl overflow-hidden border border-gray-200 mb-3">
               <div className="bg-[#F2A261] h-16 relative">
@@ -116,8 +79,39 @@ export default function Sidebar() {
                     handleLinkClick();
                   }}
                 >
-                  <FiHome className="mr-3" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 mr-1"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+                  </svg>
                   Home
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/friends"
+                  className={`flex items-center p-3 rounded-lg ${
+                    activeItem === "friens"
+                      ? "bg-[#CCE3F0] text-[#000]"
+                      : "text-gray-700 hover:bg-gray-100"
+                  }`}
+                  onClick={() => {
+                    setActiveItem("friends");
+                    handleLinkClick();
+                  }}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 mr-1"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path d="M13 7a3 3 0 11-6 0 3 3 0 016 0zM3 14a4 4 0 018-1.465A4 4 0 0117 14v1a1 1 0 01-1 1H4a1 1 0 01-1-1v-1z" />
+                  </svg>
+                  Friends
                 </Link>
               </li>
               <li>
@@ -125,7 +119,7 @@ export default function Sidebar() {
                   to="/messages"
                   className={`flex items-center p-3 rounded-lg ${
                     activeItem === "messages"
-                     ? "bg-[#CCE3F0] text-[#000]"
+                      ? "bg-[#CCE3F0] text-[#000]"
                       : "text-gray-700 hover:bg-gray-100"
                   }`}
                   onClick={() => {
@@ -133,7 +127,18 @@ export default function Sidebar() {
                     handleLinkClick();
                   }}
                 >
-                  <FiMessageSquare className="mr-3" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 mr-1"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
                   Messages
                 </Link>
               </li>
@@ -150,8 +155,39 @@ export default function Sidebar() {
                     handleLinkClick();
                   }}
                 >
-                  <FiBell className="mr-3" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 mr-1"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" />
+                  </svg>
                   Notifications
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/save"
+                  className={`flex items-center p-3 rounded-lg ${
+                    activeItem === "save"
+                      ? "bg-[#CCE3F0] text-[#000]"
+                      : "text-gray-700 hover:bg-gray-100"
+                  }`}
+                  onClick={() => {
+                    setActiveItem("save");
+                    handleLinkClick();
+                  }}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 mr-1"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z" />
+                  </svg>
+                  Save
                 </Link>
               </li>
               <li>
@@ -159,7 +195,7 @@ export default function Sidebar() {
                   to="/settings"
                   className={`flex items-center p-3 rounded-lg ${
                     activeItem === "settings"
-                     ? "bg-[#CCE3F0] text-[#000]"
+                      ? "bg-[#CCE3F0] text-[#000]"
                       : "text-gray-700 hover:bg-gray-100"
                   }`}
                   onClick={() => {
@@ -167,14 +203,25 @@ export default function Sidebar() {
                     handleLinkClick();
                   }}
                 >
-                  <FiSettings className="mr-3" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 mr-1"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
                   Settings
                 </Link>
               </li>
             </ul>
           </nav>
 
-          {user && (
+          {/* {user && (
             <button
               onClick={() => {
                 handleLogout();
@@ -182,10 +229,21 @@ export default function Sidebar() {
               }}
               className="flex items-center p-3 mt-auto text-gray-700 hover:bg-gray-100 rounded-lg"
             >
-              <FiLogOut className="mr-3" />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 mr-1"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M3 3a1 1 0 011-1h8a1 1 0 011 1v3a1 1 0 11-2 0V4H5v12h6v-2a1 1 0 112 0v3a1 1 0 01-1 1H4a1 1 0 01-1-1V3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                  clipRule="evenodd"
+                />
+              </svg>
               Logout
             </button>
-          )}
+          )} */}
         </div>
       </div>
     </>
