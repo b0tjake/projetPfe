@@ -9,11 +9,11 @@ export default function Home() {
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/posts");
+        const response = await axios.get("http://localhost:5000/api/posts/");
         setPosts(response.data);
       } catch (err) {
         setError("Failed to fetch posts.");
-        console.error(err);
+        console.error(err.response.data);
       }
     };
 

@@ -28,7 +28,7 @@ const userSchema = new mongoose.Schema({
         enum : ["admin","user"],
         default : "user"
     },
-    Profession:{
+    profession:{
         type:String,
         default : "add your profession to your profile"
     },
