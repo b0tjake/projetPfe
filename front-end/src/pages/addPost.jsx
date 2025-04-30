@@ -84,7 +84,7 @@ export default function AddPost() {
   };
 
   return (
-    <div className="h-full p-10 bg-[#fcfcfb]">
+    <div className="h-full p-10 bg-[#f3f4f6]">
     <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-md">
       <h1 className="text-3xl font-bold mb-6 text-center text-[#0077B6]">Create a new post</h1>
 

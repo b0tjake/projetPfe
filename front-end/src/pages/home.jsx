@@ -97,7 +97,7 @@ export default function Home() {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#FCFCFB]">
+    <div className="flex min-h-screen bg-[#f3f4f6]">
       {/* Sidebar on the left */}
       <div className="w-64 ">
         <Sidebar />
@@ -105,7 +105,7 @@ export default function Home() {
 
       {/* Main content on the right */}
       <div className="flex-1 p-8 flex justify-center">
-        <div className="w-full max-w-2xl">
+        <div className="w-full md:max-w-2xl">
           {error && (
             <div className="mb-6 p-4 bg-red-50 text-red-700 rounded-lg border border-red-200">
               {error}
@@ -149,7 +149,7 @@ export default function Home() {
                     <div className="flex items-center">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
-                        className={`h-5 w-5 mr-2 ${post.likes?.includes(userId) ? 'text-red-500 fill-red-500' : 'text-gray-500'}`}
+                        className={`h-5 w-5 mr-2 ${post.likes?.includes(userId) ? 'text-blue-500 fill-blue-500' : 'text-gray-500'}`}
                         viewBox="0 0 24 24"
                         stroke="currentColor"
                       >
@@ -160,12 +160,12 @@ export default function Home() {
                           d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"
                         />
                       </svg>
-                      <span className={`text-sm font-medium ${post.likes?.includes(userId) ? 'text-red-500' : 'text-gray-600'}`}>
+                      <span className={`text-sm font-medium ${post.likes?.includes(userId) ? 'text-blue-500' : 'text-gray-600'}`}>
                         {post.likes?.includes(userId) ? 'Liked' : 'Like'}
                       </span>
                     </div>
                     {post.likesCount > 0 && (
-                      <span className="ml-2 text-xs font-medium bg-red-50 text-red-600 px-2 py-1 rounded-full">
+                      <span className="ml-2 text-xs font-medium bg-blue-50 text-blue-600 px-2 py-1 rounded-full">
                         {post.likesCount}
                       </span>
                     )}
@@ -227,7 +227,7 @@ export default function Home() {
                         />
                         
                         </Link>
-                        {console.log(posts)}
+                        {/* {console.log(posts)} */}
                         <div className="bg-gray-50 p-3 rounded-lg flex-1">
                           <a href={`profile/${comment.user?._id}`} className="font-semibold text-sm">{comment.user?.fullname}</a>
                           <p className="text-sm text-gray-700">{comment.text}</p>

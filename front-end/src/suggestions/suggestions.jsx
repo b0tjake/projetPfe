@@ -74,7 +74,7 @@ export default function PlaceSuggestions() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-bg1 to-bg2">
+        <div className="min-h-screen bg-[#f3f4f6]">
             {token ? (
                 <div className="relative max-w-7xl mx-auto px-4 py-16 sm:px-6 lg:px-8">
                     <div className="text-center mb-16">
