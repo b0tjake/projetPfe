@@ -23,7 +23,7 @@ export default function Sidebar() {
       <div className="p-4 flex flex-col h-full">
         {user && (
           <div className="w-full bg-white rounded-xl overflow-hidden border border-gray-200 mb-3">
-            <div className="bg-[#F2A261] h-16 relative">
+            <div className="bg-gradient-to-br from-blue-600 to-purple-600 h-16 relative">
               <img
                 src={`http://localhost:5000/${user.image}`}
                 alt="Profile"

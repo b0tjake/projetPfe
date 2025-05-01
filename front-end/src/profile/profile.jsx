@@ -108,7 +108,7 @@ const Profile = () => {
         {/* Header */}
         <div className="bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl shadow-lg h-64 flex items-end px-8 pb-8">
           <div className="flex items-end gap-6">
-            <div className="relative group">
+            <div className="relative group cursor-pointer">
               <img
                 src={`http://localhost:5000/${userData.image}`}
                 alt="Profile"

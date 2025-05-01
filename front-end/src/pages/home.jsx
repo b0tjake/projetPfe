@@ -110,7 +110,7 @@ export default function Home() {
 
   return (
     <div className="bg-[#f3f4f6]">
-    <div className="flex min-h-screen bg-[#FCFCFB]">
+    <div className="flex min-h-screen bg-[#f3f4f6]">
       {/* Sidebar - hidden on mobile/tablet, doesn't take space */}
       <div className="hidden lg:block mt-10">
         <Sidebar />
@@ -120,7 +120,7 @@ export default function Home() {
       <div className="flex-1 p-4 md:p-8 flex justify-center">
         <div className="w-full max-w-2xl">
           {/* Create Post Button */}
-          <div className="bg-white/80 py-3 mb-3 border-b border-gray-200">
+          <div className="py-3 mb-3 border-b border-gray-200">
             <Link
               to="/addPost"
               className="w-full bg-white p-3 rounded-xl shadow-sm border border-gray-200 flex items-center hover:bg-gray-50 transition-all duration-200 hover:shadow-md"
@@ -192,7 +192,7 @@ export default function Home() {
                     </Link>
                     <div className="flex items-center text-gray-500 text-xs mt-1">
                       <span>
-                        {new Date(post.createdAt).toLocaleDateString()}
+                       {post.date}
                       </span>
                       <span className="mx-1">•</span>
                       <svg
