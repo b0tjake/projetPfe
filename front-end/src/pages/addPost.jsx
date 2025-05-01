@@ -123,7 +123,7 @@ export default function AddPost() {
             rows="5"
           />
           <div className="absolute bottom-3 right-3 text-sm text-gray-500">
-            {content.length}/500
+            {content.length}
           </div>
         </div>
 

@@ -106,6 +106,19 @@ router.post('/comment', async (req, res) => {
     res.status(400).json({ message: 'Error adding comment', err });
   }
 });
+router.delete('/:id', async (req, res) => {
+  try{
+    const deletePost = await Post.findByIdAndDelete(req.params.id)
+    if(!deletePost){
+      return res.status(404).json({message : "Post not found"})
+    }
+    res.status(200).json({message : "Post deleted successfully"})
+  }
+  catch (err) {
+    console.log("Couldn't delete post", err);
+    res.status(400).json({ message: `Couldn't delete post ${err}`  });
+  }
+})
 
 
 module.exports = router;

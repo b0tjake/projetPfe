@@ -15,12 +15,14 @@ const Profile = () => {
   const [phone, setPhone] = useState("");
   const [profession, setProfession] = useState("");
   const [showPosts, setShowPosts] = useState(false);
+  const [showMenu, setShowMenu] = useState(null);
 
   const infoRef = useRef(null);
   const postRef = useRef(null);
 
   const { id } = useParams();
   const [decoded, setDecoded] = useState(null);
+  const [editpost,setPost] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -98,21 +100,35 @@ const Profile = () => {
     setIsEditing(!isEditing);
     setSaveChanges("");
   };
-
+const handleDeletePost = async (postId) => {
+  
+  try{
+    const res = await axios.delete(`http://localhost:5000/api/posts/${postId}`);
+    if (res.status === 200) {
+      setUserPosts(userPosts.filter(post => post._id !== postId));
+      setShowMenu(null);
+    } else {
+      setError("Couldn't delete the post");
+    }
+  }
+  catch (err) {
+    console.error("Error deleting post:", err);
+  }
+}
   if (error) return <div className="text-red-500 text-center py-10 text-lg">{error}</div>;
   if (!userData) return <div className="text-center mt-10 text-gray-600">Loading profile...</div>;
 
   return (
     <div className="w-full mx-auto bg-[#f3f4f6] py-10">
-      <div className="w-2/3 mx-auto px-4">
+      <div className="w-full md:w-2/3 mx-auto px-4">
         {/* Header */}
-        <div className="bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl shadow-lg h-64 flex items-end px-8 pb-8">
-          <div className="flex items-end gap-6">
+        <div className="bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl shadow-lg h-64 flex items-end px-4 sm:px-8 pb-8">
+          <div className="flex flex-wrap items-end gap-4 sm:gap-6 w-full">
             <div className="relative group cursor-pointer">
               <img
                 src={`http://localhost:5000/${userData.image}`}
                 alt="Profile"
-                className="w-32 h-32 rounded-full border-4 border-white object-cover shadow-md"
+                className="w-24 sm:w-32 h-24 sm:h-32 rounded-full border-4 border-white object-cover shadow-md"
               />
               {decoded && userData._id === decoded.id && (
                 <div className="absolute inset-0 rounded-full bg-black bg-opacity-30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
@@ -121,8 +137,8 @@ const Profile = () => {
               )}
             </div>
             <div className="flex flex-col justify-center gap-2">
-              <h1 className="text-3xl font-bold text-white">{userData.fullname}</h1>
-              <p className="text-gray-50 text-sm">{  bio === "add a BIO to your profile" ? "" : bio|| "No profession specified"}</p>
+              <h1 className="text-2xl sm:text-3xl font-bold text-white">{userData.fullname}</h1>
+              <p className="text-gray-50 text-sm">{bio === "add a BIO to your profile" ? "" : bio || "No profession specified"}</p>
             </div>
           </div>
         </div>
@@ -209,30 +225,53 @@ const Profile = () => {
           </div>
         </div>
 
-        {/* Posts */}
-        <div ref={postRef} className={`mt-10 ${showPosts ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" : "hidden"}`}>
+        {/* laffichage dial lposts */}
+        <div ref={postRef} className={`mt-10 ${showPosts ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6" : "hidden"}`}>
           {userPosts.length > 0 ? (
             userPosts.map((post) => (
               <div key={post._id} className="bg-white shadow-md rounded-xl overflow-hidden">
-                <div className="flex items-center gap-3 p-4">
-                  <img
-                    src={`http://localhost:5000/${userData.image}`}
-                    alt="User"
-                    className="w-10 h-10 rounded-full object-cover"
-                  />
-                  <div>
-                    <p className="text-sm font-semibold">{userData.fullname}</p>
-                    <p className="text-xs text-gray-500">{new Date(post.createdAt).toLocaleDateString()}</p>
-                  </div>
-                </div>
+                <div className="flex items-center justify-between p-4 relative">
+      <div className="flex items-center gap-3">
+        <img
+          src={`http://localhost:5000/${userData.image}`}
+          alt="User"
+          className="w-10 h-10 rounded-full object-cover"
+        />
+        <div>
+          <p className="text-sm font-semibold">{userData.fullname}</p>
+          <p className="text-xs text-gray-500">{new Date(post.createdAt).toLocaleDateString()}</p>
+        </div>
+      </div>
+
+      {/* Three Dots Button */}
+      {userData._id === decoded.id && (
+      <div
+        onClick={() => setShowMenu(post._id === showMenu ? null : post._id)}
+        className={`cursor-pointer p-2 hover:bg-gray-200 rounded-full`}
+      >
+        <div className="w-1 h-1 bg-black rounded-full mb-0.5"></div>
+        <div className="w-1 h-1 bg-black rounded-full mb-0.5"></div>
+        <div className="w-1 h-1 bg-black rounded-full"></div>
+      </div>
+
+      )}
+
+      {/* Dropdown Menu */}
+      {showMenu === post._id && (
+  <div className="absolute top-14 right-4 bg-white shadow-md rounded-lg w-32 z-10">
+    <button className="w-full text-left px-4 py-2 hover:bg-gray-100 hover:rounded-lg">Edit</button>
+    <button onClick={() => handleDeletePost(post._id)} className="w-full text-left px-4 py-2 hover:bg-gray-100 hover:rounded-lg text-red-500">Delete</button>
+  </div>
+)}
+    </div>
+                  <p className="text-gray-800 text-sm ml-5 mb-2">{post.content.length < 200 ? post.content : `${post.content.slice(0,200)} ...`} </p>  
                 {post.image && (
                   <img src={`http://localhost:5000/${post.image}`} alt="Post" className="w-full h-48 object-cover" />
                 )}
                 <div className="p-4">
-                  <p className="text-gray-800 text-sm mb-2">{post.content}</p>
                   <div className="flex justify-between text-sm text-gray-500 mt-4">
-                    <button className="hover:text-indigo-600">❤️ Like</button>
-                    <button className="hover:text-indigo-600">💬 Comment</button>
+                    {/* <button className="hover:text-indigo-600">❤️ Like</button>
+                    <button className="hover:text-indigo-600">💬 Comment</button> */}
                   </div>
                 </div>
               </div>
