@@ -102,7 +102,7 @@ export default function AddPost() {
               alt="Profile"
               className="w-12 h-12 rounded-full object-cover border-2 border-[#F2A261]"
             />
-            <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></span>
+            {/* <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></span> */}
           </div>
           <span className="ml-4 text-lg font-medium text-gray-800">{user.fullname}</span>
         </div>
