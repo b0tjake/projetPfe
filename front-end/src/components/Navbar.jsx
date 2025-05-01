@@ -144,7 +144,7 @@ useEffect(() => {
                   to={`/profile/${userData.id}`}
                   className="text-gray-700 mr-3 px-3 py-2 rounded-md text-sm font-medium flex items-center"
                 >
-                               <img className="w-10 h-10 rounded-full" src={`http://localhost:5000/${userData.image}`} alt="User Profile" />
+                               <img className="w-10 rounded-full" src={`http://localhost:5000/${userData.image}`} alt="User Profile" />
                 </Link>
 }
                 <button onClick={logOut} className="text-white hover:bg-red-400 bg-red-600 dark:text-white dark:hover:bg-red-700 px-3 py-2 rounded-md text-sm font-medium flex items-center">
