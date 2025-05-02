@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 import Login from "./authentification/login";
 import Register from "./authentification/register";
@@ -13,8 +13,15 @@ import Profile from "./profile/profile";
 
 function AppContent({ setLoading, loading }) {
   const location = useLocation();
-  const isAuthPage =
-    location.pathname === "/login" || location.pathname === "/register";
+  const token = localStorage.getItem("token");
+  const isAuthPage = location.pathname === "/login" || location.pathname === "/register";
+
+  useEffect(() => {
+    if (!token && !isAuthPage) {
+      // إعادة توجيه المستخدم إلى صفحة تسجيل الدخول إذا ما كانش عنده توكن
+      window.location.href = "/login";
+    }
+  }, [token, isAuthPage]);
 
   return (
     <>
@@ -29,17 +36,12 @@ function AppContent({ setLoading, loading }) {
           <Route path="/suggestions" element={<Suggestions />} />
           <Route path="/profile/:id" element={<Profile />} />
           <Route path="/login" element={<Login setLoading={setLoading} />} />
-          <Route
-            path="/register"
-            element={<Register setLoading={setLoading} />}
-          />
+          <Route path="/register" element={<Register setLoading={setLoading} />} />
           <Route path="/addSuggestion" element={<AddSuggestion />} />
         </Routes>
-
-        {isAuthPage && <Suggestions />}
       </div>
 
-      {isAuthPage && <Footer />}
+      { <Footer />}
     </>
   );
 }
