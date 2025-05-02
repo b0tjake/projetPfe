@@ -16,13 +16,14 @@ const Profile = () => {
   const [profession, setProfession] = useState("");
   const [showPosts, setShowPosts] = useState(false);
   const [showMenu, setShowMenu] = useState(null);
-
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [postToDelete, setPostToDelete] = useState(null);
   const infoRef = useRef(null);
   const postRef = useRef(null);
+  const fileInputRef = useRef(null); // ref for file input
 
   const { id } = useParams();
   const [decoded, setDecoded] = useState(null);
-  const [editpost,setPost] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -62,21 +63,11 @@ const Profile = () => {
 
   useEffect(() => {
     if (showPosts) {
-      gsap.fromTo(
-        postRef.current,
-        { x: 100, opacity: 0 },
-        { x: 0, opacity: 1, duration: 0.5, ease: "power2.out" }
-      );
-      gsap.fromTo('.showPo',
-        { x: -100, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, ease: "power2.out" });
+      gsap.fromTo(postRef.current, { x: 100, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, ease: "power2.out" });
+      gsap.fromTo('.showPo', { x: -100, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, ease: "power2.out" });
     } else {
-      gsap.fromTo(
-        infoRef.current,
-        { x: -100, opacity: 0 },
-        { x: 0, opacity: 1, duration: 0.5, ease: "power2.out" }
-      );
-      gsap.fromTo(".showPr", 
-        { x: 100, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, ease: "power2.out" });
+      gsap.fromTo(infoRef.current, { x: -100, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, ease: "power2.out" });
+      gsap.fromTo(".showPr", { x: 100, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, ease: "power2.out" });
     }
   }, [showPosts]);
 
@@ -100,21 +91,49 @@ const Profile = () => {
     setIsEditing(!isEditing);
     setSaveChanges("");
   };
-const handleDeletePost = async (postId) => {
-  
-  try{
-    const res = await axios.delete(`http://localhost:5000/api/posts/${postId}`);
-    if (res.status === 200) {
-      setUserPosts(userPosts.filter(post => post._id !== postId));
-      setShowMenu(null);
-    } else {
-      setError("Couldn't delete the post");
+
+  const handleDeletePost = async (postId) => {
+    try {
+      const res = await axios.delete(`http://localhost:5000/api/posts/${postId}`);
+      if (res.status === 200) {
+        setTimeout(() => {
+          setUserPosts(userPosts.filter(post => post._id !== postId));
+          setShowMenu(null);
+          setShowConfirm(false);
+        }, 400);
+      } else {
+        setError("Couldn't delete the post");
+      }
+    } catch (err) {
+      console.error("Error deleting post:", err);
     }
-  }
-  catch (err) {
-    console.error("Error deleting post:", err);
-  }
-}
+  };
+
+  const confirmDelete = (postId) => {
+    setPostToDelete(postId);
+    setShowConfirm(true);
+    setShowMenu(null);
+  };
+
+  const editPhoto = async (file) => {
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("image", file);
+
+    try {
+      const res = await axios.put(`http://localhost:5000/api/profile/editPhoto/${id}`,formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      if (res.status === 200) {
+        window.location.reload(); // Or re-fetch user
+      }
+    } catch (error) {
+      console.error("Error editing photo:", error);
+    }
+  };
+
   if (error) return <div className="text-red-500 text-center py-10 text-lg">{error}</div>;
   if (!userData) return <div className="text-center mt-10 text-gray-600">Loading profile...</div>;
 
@@ -124,7 +143,26 @@ const handleDeletePost = async (postId) => {
         {/* Header */}
         <div className="bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl shadow-lg h-64 flex items-end px-4 sm:px-8 pb-8">
           <div className="flex flex-wrap items-end gap-4 sm:gap-6 w-full">
-            <div className="relative group cursor-pointer">
+            <div
+              className={`relative group ${decoded && userData._id === decoded.id ? "cursor-pointer" : ""} `}
+              onClick={() => {
+                if (decoded && userData._id === decoded.id) {
+                  fileInputRef.current.click();
+                }
+              }}
+            >
+              <input
+                type="file"
+                accept="image/*"
+                ref={fileInputRef}
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files[0];
+                  if (file) {
+                    editPhoto(file);
+                  }
+                }}
+              />
               <img
                 src={`http://localhost:5000/${userData.image}`}
                 alt="Profile"
@@ -136,33 +174,23 @@ const handleDeletePost = async (postId) => {
                 </div>
               )}
             </div>
+
             <div className="flex flex-col justify-center gap-2">
               <h1 className="text-2xl sm:text-3xl font-bold text-white">{userData.fullname}</h1>
-              <p className="text-gray-50 text-sm">{bio === "add a BIO to your profile" ? "" : bio || "No profession specified"}</p>
+              <p className="text-gray-50 text-sm">{bio || "No profession specified"}</p>
             </div>
           </div>
         </div>
 
         {/* Toggle Buttons */}
         <div className="flex justify-center mt-10 gap-4">
-          <button
-            onClick={() => setShowPosts(false)}
-            className={`w-1/2 px-6 py-3 text-black font-semibold `}
-          >
-            
+          <button onClick={() => setShowPosts(false)} className="w-1/2 px-6 py-3 text-black font-semibold">
             Profile Info
-            <div className={`w-full px-6 py-3 text-black font-semibold ${
-              !showPosts ? "flex border-b-2 border-black showPr" : "flex border-b-2 border-grey-200"
-            }`} ></div>
+            <div className={`w-full px-6 py-3 text-black font-semibold ${!showPosts ? "flex border-b-2 border-black showPr" : "flex border-b-2 border-grey-200"}`}></div>
           </button>
-          <button
-            onClick={() => setShowPosts(true)}
-            className={`w-1/2 px-6 py-3 text-black font-semibold `}
-          >
+          <button onClick={() => setShowPosts(true)} className="w-1/2 px-6 py-3 text-black font-semibold">
             Posts
-            <div className={`w-full px-6 py-3 text-black font-semibold ${
-              showPosts ? "flex border-b-2 border-black showPo" : "flex border-b-2 border-grey-200"
-            }`} ></div>
+            <div className={`w-full px-6 py-3 text-black font-semibold ${showPosts ? "flex border-b-2 border-black showPo" : "flex border-b-2 border-grey-200"}`}></div>
           </button>
         </div>
 
@@ -176,7 +204,7 @@ const handleDeletePost = async (postId) => {
                   onClick={handleEditToggle}
                   className="text-sm px-4 py-2 rounded-md bg-gray-100 hover:bg-gray-200 text-gray-700"
                 >
-                  {isEditing ? 'Cancel' : 'Edit Profile'}
+                  {isEditing ? "Cancel" : "Edit Profile"}
                 </button>
               )}
             </div>
@@ -193,17 +221,9 @@ const handleDeletePost = async (postId) => {
                 <label className="w-32 text-gray-600 font-medium">{label}</label>
                 {isEditing && setter ? (
                   isTextArea ? (
-                    <textarea
-                      className="flex-1 border rounded-lg px-3 py-2 min-h-[100px] focus:ring-2 focus:ring-indigo-500"
-                      value={value}
-                      onChange={(e) => setter(e.target.value)}
-                    />
+                    <textarea className="flex-1 border rounded-lg px-3 py-2 min-h-[100px]" value={value} onChange={(e) => setter(e.target.value)} />
                   ) : (
-                    <input
-                      className="flex-1 border rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500"
-                      value={value}
-                      onChange={(e) => setter(e.target.value)}
-                    />
+                    <input className="flex-1 border rounded-lg px-3 py-2" value={value} onChange={(e) => setter(e.target.value)} />
                   )
                 ) : (
                   <div className="flex-1 text-gray-800 whitespace-pre-line">{value || "Not specified"}</div>
@@ -213,10 +233,7 @@ const handleDeletePost = async (postId) => {
 
             {isEditing && (
               <div className="pt-4 flex items-center gap-4">
-                <button
-                  onClick={handleSaveChanges}
-                  className="px-6 py-2 bg-[#0077B6] text-white rounded-lg hover:bg-[#006BA3]"
-                >
+                <button onClick={handleSaveChanges} className="px-6 py-2 bg-[#0077B6] text-white rounded-lg hover:bg-[#006BA3]">
                   Save Changes
                 </button>
                 {saveChanges && <span className="text-green-600 text-sm">{saveChanges}</span>}
@@ -225,55 +242,59 @@ const handleDeletePost = async (postId) => {
           </div>
         </div>
 
-        {/* laffichage dial lposts */}
+        {/* Posts */}
         <div ref={postRef} className={`mt-10 ${showPosts ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6" : "hidden"}`}>
           {userPosts.length > 0 ? (
             userPosts.map((post) => (
               <div key={post._id} className="bg-white shadow-md rounded-xl overflow-hidden">
                 <div className="flex items-center justify-between p-4 relative">
-      <div className="flex items-center gap-3">
-        <img
-          src={`http://localhost:5000/${userData.image}`}
-          alt="User"
-          className="w-10 h-10 rounded-full object-cover"
-        />
-        <div>
-          <p className="text-sm font-semibold">{userData.fullname}</p>
-          <p className="text-xs text-gray-500">{new Date(post.createdAt).toLocaleDateString()}</p>
-        </div>
-      </div>
-
-      {/* Three Dots Button */}
-      {userData._id === decoded.id && (
-      <div
-        onClick={() => setShowMenu(post._id === showMenu ? null : post._id)}
-        className={`cursor-pointer p-2 hover:bg-gray-200 rounded-full`}
-      >
-        <div className="w-1 h-1 bg-black rounded-full mb-0.5"></div>
-        <div className="w-1 h-1 bg-black rounded-full mb-0.5"></div>
-        <div className="w-1 h-1 bg-black rounded-full"></div>
-      </div>
-
-      )}
-
-      {/* Dropdown Menu */}
-      {showMenu === post._id && (
-  <div className="absolute top-14 right-4 bg-white shadow-md rounded-lg w-32 z-10">
-    <button className="w-full text-left px-4 py-2 hover:bg-gray-100 hover:rounded-lg">Edit</button>
-    <button onClick={() => handleDeletePost(post._id)} className="w-full text-left px-4 py-2 hover:bg-gray-100 hover:rounded-lg text-red-500">Delete</button>
-  </div>
-)}
-    </div>
-                  <p className="text-gray-800 text-sm ml-5 mb-2">{post.content.length < 200 ? post.content : `${post.content.slice(0,200)} ...`} </p>  
-                {post.image && (
-                  <img src={`http://localhost:5000/${post.image}`} alt="Post" className="w-full h-48 object-cover" />
-                )}
-                <div className="p-4">
-                  <div className="flex justify-between text-sm text-gray-500 mt-4">
-                    {/* <button className="hover:text-indigo-600">❤️ Like</button>
-                    <button className="hover:text-indigo-600">💬 Comment</button> */}
+                  <div className="flex items-center gap-3">
+                    <img src={`http://localhost:5000/${userData.image}`} alt="User" className="w-10 h-10 rounded-full object-cover" />
+                    <div>
+                      <p className="text-sm font-semibold">{userData.fullname}</p>
+                      <p className="text-xs text-gray-500">{new Date(post.createdAt).toLocaleDateString()}</p>
+                    </div>
                   </div>
+                  {userData._id === decoded.id && (
+                    <div
+                      onClick={() => setShowMenu(post._id === showMenu ? null : post._id)}
+                      className="cursor-pointer p-2 hover:bg-gray-200 rounded-full"
+                    >
+                      <div className="w-1 h-1 bg-black rounded-full mb-0.5"></div>
+                      <div className="w-1 h-1 bg-black rounded-full mb-0.5"></div>
+                      <div className="w-1 h-1 bg-black rounded-full"></div>
+                    </div>
+                  )}
+
+                  {showMenu === post._id && (
+                    <div className="absolute top-14 right-4 bg-white shadow-md rounded-lg w-32 z-10">
+                      {/* <button className="w-full text-left px-4 py-2 hover:bg-gray-100 hover:rounded-lg">Edit</button> */}
+                      <button onClick={() => confirmDelete(post._id)} className="w-full text-left px-4 py-2 hover:bg-gray-100 text-red-500">Delete</button>
+                    </div>
+                  )}
+
+                  {showConfirm && (
+                    <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+                      <div className="bg-white rounded-xl shadow-lg max-w-sm w-full p-6">
+                        <h2 className="text-lg font-semibold text-gray-800 mb-4">Confirm Deletion</h2>
+                        <p className="text-gray-600 mb-6">Are you sure you want to delete this post? This action cannot be undone.</p>
+                        <div className="flex justify-end gap-3">
+                          <button onClick={() => setShowConfirm(false)} className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">
+                            No, Cancel
+                          </button>
+                          <button onClick={() => handleDeletePost(postToDelete)} className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                            Yes, Delete
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
+
+                <p className="text-gray-800 text-sm ml-5 mb-2">
+                  {post.content.length < 200 ? post.content : `${post.content.slice(0, 200)} ...`}
+                </p>
+                {post.image && <img src={`http://localhost:5000/${post.image}`} alt="Post" className="w-full h-48 object-cover" />}
               </div>
             ))
           ) : (

@@ -2,8 +2,18 @@ const express = require('express');
 const { middleWare } = require('../middleWare/profilemiddleware');
 const user = require('../models/user');
 const posts = require('../models/post');  
+const multer = require('multer')
 
+const storage = multer.diskStorage({
+    destination: function(req,file,cb){
+        cb(null,'profilePics')
+    },
+    filename: function(req,file,cb){
+        cb(null,Date.now() + '-' + file.originalname)
+    },
 
+})
+const upload = multer({storage:storage})
 
 
 const app = express()
@@ -33,4 +43,24 @@ app.put('/saveChanges/:id' , async (req,res) => {
     }
 
 })
+app.put('/editPhoto/:id', upload.single("image"), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No image uploaded" });
+      }
+  
+      const updatePhoto = await user.findByIdAndUpdate(req.params.id,{ image: req.file.path },{ new: true });
+  
+      res.status(200).json({
+        message: "Changes are saved",
+        user: updatePhoto,
+        image: req.file.path
+      });
+  
+    } catch (err) {
+      console.log("Couldn't update user", err);
+      res.status(400).json({ message: `Couldn't update user ${err}` });
+    }
+  });
+  
 module.exports = app
