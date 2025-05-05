@@ -34,6 +34,7 @@ app.post("/addSuggestion", upload.single('image'), async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 });
+//route bach njibo les suggestions
 app.post('/getSuggestion', async (req, res) => {
     try {
         const suggestions = await Suggestion.find();

@@ -36,80 +36,92 @@ export default function AddSuggestion() {
   };
 
   return (
-    <div className="flex justify-center bg-bg1">
-    <div className="max-w-3xl mx-auto bg-bg2 p-8 rounded-xl shadow-xl mt-12">
-      <h1 className="text-3xl font-semibold text-gray-800 mb-6 text-center">Add Your Suggestion</h1>
+    <div className="flex justify-center bg-gray-50 min-h-screen py-10 px-4">
+    <div className="w-full max-w-2xl bg-white p-8 rounded-2xl shadow-xl">
+      <h1 className="text-3xl font-bold text-gray-800 mb-8 text-center">
+        📝 Add Your Suggestion
+      </h1>
+  
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Title Input */}
+        {/* Title */}
         <div>
-          <label htmlFor="title" className="text-lg font-medium text-gray-700">Title</label>
+          <label htmlFor="title" className="block text-base font-semibold text-gray-700 mb-1">
+            Title
+          </label>
           <input
             type="text"
             id="title"
-            placeholder="Enter the title of the suggestion"
+            placeholder="Enter the suggestion title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             required
-            className="w-full p-4 mt-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300"
+            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
           />
         </div>
-
-        {/* Description Input */}
+  
+        {/* Description */}
         <div>
-          <label htmlFor="description" className="text-lg font-medium text-gray-700">Description</label>
+          <label htmlFor="description" className="block text-base font-semibold text-gray-700 mb-1">
+            Description
+          </label>
           <textarea
             id="description"
-            placeholder="Provide a detailed description of the suggestion"
+            placeholder="Write a detailed description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             required
             rows="4"
-            className="w-full p-4 mt-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300"
+            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
           ></textarea>
         </div>
-
-        {/* Cost Input */}
+  
+        {/* Cost */}
         <div>
-          <label htmlFor="cost" className="text-lg font-medium text-gray-700">Cost</label>
+          <label htmlFor="cost" className="block text-base font-semibold text-gray-700 mb-1">
+            Estimated Cost
+          </label>
           <input
             type="number"
             id="cost"
-            placeholder="Enter the cost of the suggestion"
+            placeholder="Enter estimated cost"
             value={cost}
             onChange={(e) => setCost(e.target.value)}
             required
-            className="w-full p-4 mt-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300"
+            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
           />
         </div>
-
-        {/* Image Input */}
+  
+        {/* Image */}
         <div>
-          <label htmlFor="image" className="text-lg font-medium text-gray-700">Upload Image</label>
+          <label htmlFor="image" className="block text-base font-semibold text-gray-700 mb-1">
+            Upload an Image
+          </label>
           <input
             type="file"
             accept="image/*"
             onChange={(e) => setImage(e.target.files[0])}
             required
-            className="w-full mt-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300"
+            className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none transition bg-white"
           />
         </div>
-
-        {/* Submit Button */}
-        <div>
+  
+        {/* Submit */}
+        <div className="flex justify-center mt-6">
           <button
             type="submit"
-            className="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 transition duration-300"
+            className="w-fit p-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition duration-300"
           >
-            Add Suggestion
+            ✅ Submit Suggestion
           </button>
         </div>
       </form>
-
-      {/* Success/Message Display */}
+  
+      {/* Message */}
       {message && (
-        <p className="mt-6 text-center text-lg font-medium text-green-600">{message}</p>
+        <p className="mt-6 text-center text-base font-medium text-green-600">{message}</p>
       )}
     </div>
-    </div>
+  </div>
+  
   );
 }

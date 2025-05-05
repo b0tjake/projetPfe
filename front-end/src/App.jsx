@@ -10,6 +10,8 @@ import AddPost from "./pages/addPost";
 import Home from "./pages/home";
 import AddSuggestion from "./admin/addSuggestion";
 import Profile from "./profile/profile";
+import AdminDash from "./admin/adminDash";
+import ManageUsers from "./admin/manageUsers";
 
 function AppContent({ setLoading, loading }) {
   const location = useLocation();
@@ -38,6 +40,8 @@ function AppContent({ setLoading, loading }) {
           <Route path="/login" element={<Login setLoading={setLoading} />} />
           <Route path="/register" element={<Register setLoading={setLoading} />} />
           <Route path="/addSuggestion" element={<AddSuggestion />} />
+          <Route path="/adminDash" element={<AdminDash/>} />
+          <Route path="/manageUsers" element={<ManageUsers/>}/>
         </Routes>
       </div>
 

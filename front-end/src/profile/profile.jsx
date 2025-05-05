@@ -299,7 +299,7 @@ const Profile = () => {
             ))
           ) : (
             <div className="text-center text-gray-500 col-span-full py-10">
-              <p>No posts yet. Start sharing your thoughts!</p>
+              <p>No posts yet. Start sharing your journeys!</p>
             </div>
           )}
         </div>

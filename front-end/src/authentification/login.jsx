@@ -38,7 +38,7 @@ export default function Login({setLoading}) {
         }, 2000)
         setTimeout(()=> {
           if (res.data.role === "admin") {
-            navigate("/addSuggestion");
+            navigate("/adminDash");
           // setLoading(false)
           }
           else if (res.data.role === "user") {

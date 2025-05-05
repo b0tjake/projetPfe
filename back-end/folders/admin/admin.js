@@ -52,4 +52,62 @@ app.post('/addSuggestion', upload.single('image'), async(req,res) => {
         res.status(500).json({message:error.message})
     }
 })
+// affichage dial lusers
+app.get('/showUsers' , async(req,res) => {
+    try{
+        const users = await User.find()
+        if(!users) {
+            res.status(400).json({message:"No users found"})
+        }
+        res.status(200).json(users)
+    }
+    catch(error){
+        res.status(500).json({message:error.message})
+    }
+})
+app.put('/makeAdmin/:id', async (req, res) => {
+    const userId = req.params.id
+    try{
+    const user = await User.findByIdAndUpdate(userId,{role:"admin"},{new:true})
+    if(!user) {
+        return res.status(404).json({message:"User not found"})
+    }
+    res.status(200).json({message:"User updated successfully", user})
+    }
+    catch(error){
+        res.status(500).json({message:error.message})
+    }
+
+}
+
+)
+
+app.put('/removeAdmin/:id', async (req, res) => {
+    const userId = req.params.id
+    try{
+    const user = await User.findByIdAndUpdate(userId,{role:"user"},{new:true})
+    if(!user) {
+        return res.status(404).json({message:"User not found"})
+    }
+    res.status(200).json({message:"User updated successfully", user})
+    }
+    catch(error){
+        res.status(500).json({message:error.message})
+    }
+}
+)
+app.delete('/deleteUser/:id', async (req, res) => {
+    const userId = req.params.id
+    try{
+    const user = await User.findByIdAndDelete(userId)
+    if(!user) {
+        return res.status(404).json({message:"User not found"})
+    }
+    res.status(200).json({message:"User deleted successfully", user})
+    }
+    catch(error){
+        res.status(500).json({message:error.message})
+    }
+}
+)
 module.exports = app;
