@@ -74,8 +74,7 @@ app.post('/upVote', async (req, res) => {
 
         res.status(200).json({
             message: 'Upvoted successfully',
-            rating: suggestion.rating,
-            upvoters: suggestion.upvoters.length,
+            updatedPlace: suggestion
         });
 
     } catch (err) {
@@ -98,16 +97,23 @@ app.post('/downVote',async(req,res) => {
         suggestion.downvoters.push(userId)
         suggestion.rating -= 1
         await suggestion.save()
-        res.status(200).json({message: "downVote successfully", rating: suggestion.rating, downvoters: suggestion.downvoters.length})
+        res.status(200).json({
+            message: "downVote successfully", 
+            updatedPlace: suggestion,
+                })
     }
     catch(err){
         console.error('Error downvoting:', err)
         res.status(500).json({message: 'Server error'})
     }
 })
-
-
-
-
-
+app.delete('/:id' , async (req, res) => {
+    const { id } = req.params;
+    try {
+        const suggestion = await Suggestion.findByIdAndDelete(id);
+        res.status(200).json({ message: 'Suggestion deleted successfully' });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
 module.exports = app;

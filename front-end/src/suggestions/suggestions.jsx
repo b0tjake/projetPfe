@@ -5,7 +5,7 @@ import { jwtDecode } from "jwt-decode";
 export default function PlaceSuggestions() {
     const [placeData, setPlaceData] = useState([]);
     const [userId, setUserId] = useState(null);
-    const [error, setError] = useState(null);
+    const [errorMap, setErrorMap] = useState({}); // errorMap for each place
     const token = localStorage.getItem("token");
 
     // جلب الأماكن
@@ -13,65 +13,69 @@ export default function PlaceSuggestions() {
         const getPlaces = async () => {
             try {
                 const res = await axios.post("http://localhost:5000/api/suggestions/getSuggestion");
-                // console.log(res.data.upvoters)
                 setPlaceData(res.data);
-
             } catch (error) {
                 console.error("Error fetching place data:", error);
             }
         };
         getPlaces();
     }, []);
-    
+
     useEffect(() => {
         if (token) {
             const decoded = jwtDecode(token);
             setUserId(decoded.id);
-            // console.log("User ID:", decoded.id);
         }
     }, [token]);
-
+//UPVOTE
     const upVote = async (placeId) => {
         try {
             const res = await axios.post("http://localhost:5000/api/suggestions/upVote", {
                 placeId,
                 userId,
             });
-            console.log(res.data);
-    // console.log(userId)
-    setPlaceData((prevData) =>
-        prevData.map((place) =>
-            place._id === placeId
-                ? { ...place, rating: place.rating + 1}
-                : place
-        )
-    );
+            const updatedPlace = res.data.updatedPlace;
+
+            setPlaceData((prevData) =>
+                prevData.map((place) =>
+                    place._id === placeId
+                        ? {
+                              ...place,
+                              rating: updatedPlace.rating,
+                              upvoters: updatedPlace.upvoters,
+                              downvoters: updatedPlace.downvoters,
+                          }
+                        : place
+                )
+            );
+            setErrorMap((prev) => ({ ...prev, [placeId]: null })); 
         } catch (error) {
-            // console.error("Error upvoting place:", error);
-            setError(res.data.message);
+            setErrorMap((prev) => ({ ...prev, [placeId]: "You already upvoted this place" }));
         }
     };
+//downvote
+    const downVote = async (placeId) => {
+        try {
+            const res = await axios.post("http://localhost:5000/api/suggestions/downVote", { placeId, userId });
+            const updatedPlace = res.data.updatedPlace;
 
-    const downVote = async(placeId) => {
-        try{
-            const res = await axios.post("http://localhost:5000/api/suggestions/downVote", {placeId,userId})
-            console.log(res.data)
-            setPlaceData((prevData) => {
-                return prevData.map((place) => {
-                    if (place._id === placeId) {
-                        return { ...place, rating: place.rating - 1 };
-                    }
-
-                    return place;
-                })
-            })
+            setPlaceData((prevData) =>
+                prevData.map((place) =>
+                    place._id === placeId
+                        ? {
+                              ...place,
+                              rating: updatedPlace.rating,
+                              upvoters: updatedPlace.upvoters,
+                              downvoters: updatedPlace.downvoters,
+                          }
+                        : place
+                )
+            );
+            setErrorMap((prev) => ({ ...prev, [placeId]: null }));
+        } catch (error) {
+            setErrorMap((prev) => ({ ...prev, [placeId]: "You already downvoted this place" }));
         }
-        catch(error){
-            // console.error("Error downvoting place:", error);
-            setError(" You already downvoted this place");
-        }
-
-    }
+    };
 
     return (
         <div className="min-h-screen bg-[#f3f4f6]">
@@ -107,17 +111,32 @@ export default function PlaceSuggestions() {
                                                 >
                                                     ↑
                                                 </button>
-                                                <button onClick={() => downVote(place._id)} className="text-white bg-red-500 hover:bg-red-700 px-3 py-1 rounded-full transition-colors">
+                                                <button
+                                                    onClick={() => downVote(place._id)}
+                                                    className="text-white bg-red-500 hover:bg-red-700 px-3 py-1 rounded-full transition-colors"
+                                                >
                                                     ↓
                                                 </button>
-
                                             </div>
-                                            <p className="text-white font-semibold">
-                                                 Upvotes : {place.rating}
-
-                                            </p>
+                                            <div className="text-white flex flex-col justify-start font-semibold">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-4 h-4 rounded-full bg-green-500"></div>
+                                                    <p className="flex justify-center items-center gap-4">
+                                                        Upvotes: {place.upvoters.length}
+                                                    </p>
+                                                </div>
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-4 h-4 rounded-full bg-red-500"></div>
+                                                    <p className="flex justify-center items-center gap-4">
+                                                        Downvotes: {place.downvoters.length}
+                                                    </p>
+                                                </div>
+                                            </div>
                                         </div>
-                                            {/* <p className="text-red-500 bg-gray-50 ">{error}</p> */}
+
+                                        {errorMap[place._id] && (
+                                            <p className="text-red-500 mt-2">{errorMap[place._id]}</p>
+                                        )}
                                     </div>
                                 </div>
                             </div>

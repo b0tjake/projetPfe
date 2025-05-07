@@ -12,6 +12,8 @@ import AddSuggestion from "./admin/addSuggestion";
 import Profile from "./profile/profile";
 import AdminDash from "./admin/adminDash";
 import ManageUsers from "./admin/manageUsers";
+import ManageSuggestions from "./admin/manageSuggestions";
+import ManagePosts from "./admin/managePosts";
 
 function AppContent({ setLoading, loading }) {
   const location = useLocation();
@@ -42,6 +44,9 @@ function AppContent({ setLoading, loading }) {
           <Route path="/addSuggestion" element={<AddSuggestion />} />
           <Route path="/adminDash" element={<AdminDash/>} />
           <Route path="/manageUsers" element={<ManageUsers/>}/>
+          <Route path="/manageSuggestions" element={<ManageSuggestions/>}/>
+          <Route path="/managePosts" element={<ManagePosts/>}/>
+          <Route path="*" element={<h1 className="text-center text-2xl">Page Not Found</h1>} />
         </Routes>
       </div>
 

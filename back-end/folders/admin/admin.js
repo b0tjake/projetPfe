@@ -1,6 +1,7 @@
 const express = require('express');
 const User = require('../models/user');
 const suggestion = require('../models/suggestions');
+const posts = require('../models/post');
 const multer = require('multer');
 const path = require('path');
 const app = express();
@@ -110,4 +111,13 @@ app.delete('/deleteUser/:id', async (req, res) => {
     }
 }
 )
+app.get('/getPosts',async(req,res) => {
+ try{
+    const post = await posts.find().populate('user','username')
+    res.status(200).json(post)
+ }  
+ catch(error){
+    res.status(500).json({message:error.message})
+ } 
+})
 module.exports = app;
