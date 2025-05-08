@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import Login from "./authentification/login";
 import Register from "./authentification/register";
 import Navbar from "./components/Navbar";
@@ -14,10 +14,29 @@ import AdminDash from "./admin/adminDash";
 import ManageUsers from "./admin/manageUsers";
 import ManageSuggestions from "./admin/manageSuggestions";
 import ManagePosts from "./admin/managePosts";
+import { jwtDecode } from "jwt-decode";
+import NotFoundPage from "./notFoundPage";
+
 
 function AppContent({ setLoading, loading }) {
   const location = useLocation();
+  const [user, setUser] = useState(null);
+  const [isUserLoaded, setIsUserLoaded] = useState(false);
+
+const navigate = useNavigate();
   const token = localStorage.getItem("token");
+  useEffect(() => {
+    if (token) {
+      try {
+        const decodedToken = jwtDecode(token);
+        setUser(decodedToken);
+      } catch (error) {
+        console.error("Error decoding token:", error);
+        setUser(null);
+      }
+    }
+    setIsUserLoaded(true); 
+  }, []);
   const isAuthPage = location.pathname === "/login" || location.pathname === "/register";
 
   useEffect(() => {
@@ -26,7 +45,7 @@ function AppContent({ setLoading, loading }) {
       window.location.href = "/login";
     }
   }, [token, isAuthPage]);
-
+  
   return (
     <>
       {loading && <Loading />}
@@ -34,20 +53,35 @@ function AppContent({ setLoading, loading }) {
       {!isAuthPage && <Navbar setLoading={setLoading} />}
 
       <div className={`${!isAuthPage ? "pt-16" : ""}`}>
+      {!isUserLoaded ? <Loading /> : (
+
         <Routes>
+          
           <Route path="/" element={<Home />} />
           <Route path="/addPost" element={<AddPost />} />
           <Route path="/suggestions" element={<Suggestions />} />
           <Route path="/profile/:id" element={<Profile />} />
           <Route path="/login" element={<Login setLoading={setLoading} />} />
           <Route path="/register" element={<Register setLoading={setLoading} />} />
-          <Route path="/addSuggestion" element={<AddSuggestion />} />
+          {/* <Route path="/adminDash" element={<AdminDash/>} /> */}
+          {user?.role === "admin" ? 
+          <>
           <Route path="/adminDash" element={<AdminDash/>} />
+          <Route path="/addSuggestion" element={<AddSuggestion />} />
           <Route path="/manageUsers" element={<ManageUsers/>}/>
           <Route path="/manageSuggestions" element={<ManageSuggestions/>}/>
           <Route path="/managePosts" element={<ManagePosts/>}/>
-          <Route path="*" element={<h1 className="text-center text-2xl">Page Not Found</h1>} />
+          </>
+          :
+          
+          <>
+          {["/adminDash", "/addSuggestion", "/manageUsers", "/manageSuggestions", "/managePosts"].includes(location.pathname) && (
+            <Route path={location.pathname} element={<Navigate to="/" replace />} />
+          )}
+        </>        }
+          <Route path="*" element={<NotFoundPage/>} />
         </Routes>
+      )}
       </div>
 
       { <Footer />}

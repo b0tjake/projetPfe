@@ -13,21 +13,20 @@ export default function AdminDash() {
   const token = localStorage.getItem("token");
 
   useEffect(() => {
-    // Check if token exists and verify role
     if (!token) {
-      navigate("/login"); // If no token, redirect to login
+      navigate("/login");
       return;
     }
 
     try {
-      const decodedToken = JSON.parse(atob(token.split(".")[1])); // Decode JWT to check role
+      const decodedToken = JSON.parse(atob(token.split(".")[1]));
       if (decodedToken.role !== "admin") {
         setIsAdmin(false);
-        navigate("/"); // Redirect to home if not admin
+        navigate("/");
       }
     } catch (err) {
       console.log("Error decoding token", err);
-      navigate("/login");
+      navigate("/");
     }
   }, [token, navigate]);
 
@@ -81,7 +80,7 @@ export default function AdminDash() {
   }, [token]);
 
   if (!isAdmin) {
-    return <div>You do not have access to this page.</div>;  // Redirect message if user is not an admin
+    return <div>You do not have access to this page.</div>;
   }
 
   return (
