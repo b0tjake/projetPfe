@@ -1,120 +1,150 @@
 import { useEffect, useState, useRef } from "react";
 import { jwtDecode } from "jwt-decode";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import gsap from "gsap";
+import { FaHeart, FaComment, FaEllipsisV, FaMapMarkerAlt, FaPhone, FaUserEdit, FaSun, FaMoon } from "react-icons/fa";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 const Profile = () => {
-  const [userData, setUserData] = useState(null);
-  const [userPosts, setUserPosts] = useState([]);
-  const [error, setError] = useState(null);
-  const [saveChanges, setSaveChanges] = useState("");
-  const [isEditing, setIsEditing] = useState(false);
-  const [bio, setBio] = useState("");
-  const [city, setCity] = useState("");
-  const [phone, setPhone] = useState("");
-  const [profession, setProfession] = useState("");
-  const [showPosts, setShowPosts] = useState(false);
-  const [showMenu, setShowMenu] = useState(null);
-  const [showConfirm, setShowConfirm] = useState(false);
-  const [postToDelete, setPostToDelete] = useState(null);
-  const infoRef = useRef(null);
-  const postRef = useRef(null);
-  const fileInputRef = useRef(null); // ref for file input
+  const navigate = useNavigate();
+  const [state, setState] = useState({
+    userData: null,
+    userPosts: [],
+    error: null,
+    saveChanges: "",
+    isEditing: false,
+    bio: "",
+    city: "",
+    phone: "",
+    profession: "",
+    activeTab: "Posts",
+    showMenu: null,
+    showConfirm: false,
+    postToDelete: null,
+    darkMode: localStorage.getItem("darkMode") === "true" || false,
+    isLoading: true
+  });
 
   const { id } = useParams();
   const [decoded, setDecoded] = useState(null);
+  const fileInputRef = useRef(null);
+  const sectionRefs = useRef([]);
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      try {
-        const decodedToken = jwtDecode(token);
-        setDecoded(decodedToken);
-      } catch (err) {
-        setError("Invalid token");
-      }
-    } else {
-      setError("Please login to view the profile");
+  // Add section to refs array for animations
+  const addToRefs = (el) => {
+    if (el && !sectionRefs.current.includes(el)) {
+      sectionRefs.current.push(el);
     }
+  };
+
+  // Initialize animations
+  useEffect(() => {
+    gsap.registerPlugin(ScrollTrigger);
+
+    // Section animations
+    sectionRefs.current.forEach((section) => {
+      gsap.from(section, {
+        scrollTrigger: {
+          trigger: section,
+          start: "top 80%",
+          toggleActions: "play none none none"
+        },
+        y: 50,
+        opacity: 0,
+        duration: 1,
+        ease: "power2.out"
+      });
+    });
+
+    return () => ScrollTrigger.getAll().forEach(trigger => trigger.kill());
   }, []);
 
+  // Check authentication and decode token
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const res = await axios.get(`http://localhost:5000/api/profile/profile/${id}`);
-        setUserData(res.data.user);
-        setUserPosts(res.data.posts);
-      } catch (err) {
-        setError("Couldn't fetch user data");
-      }
-    };
-    fetchUser();
-  }, [id]);
-
-  useEffect(() => {
-    if (userData) {
-      setBio(userData.bio || "");
-      setCity(userData.city || "");
-      setPhone(userData.phone || "");
-      setProfession(userData.profession || "");
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setState(prev => ({ ...prev, error: "Please login to view the profile" }));
+      navigate('/login');
+      return;
     }
-  }, [userData]);
 
-  useEffect(() => {
-    if (showPosts) {
-      gsap.fromTo(postRef.current, { x: 100, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, ease: "power2.out" });
-      gsap.fromTo('.showPo', { x: -100, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, ease: "power2.out" });
-    } else {
-      gsap.fromTo(infoRef.current, { x: -100, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, ease: "power2.out" });
-      gsap.fromTo(".showPr", { x: 100, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, ease: "power2.out" });
+    try {
+      const decodedToken = jwtDecode(token);
+      setDecoded(decodedToken);
+      fetchUserData();
+    } catch (err) {
+      setState(prev => ({ ...prev, error: "Invalid token" }));
     }
-  }, [showPosts]);
+  }, [id, navigate]);
 
+  // Fetch user data
+  const fetchUserData = async () => {
+    try {
+      const res = await axios.get(`http://localhost:5000/api/profile/profile/${id}`);
+      setState(prev => ({
+        ...prev,
+        userData: res.data.user,
+        userPosts: res.data.posts,
+        bio: res.data.user.bio || "",
+        city: res.data.user.city || "",
+        phone: res.data.user.phone || "",
+        profession: res.data.user.profession || "",
+        isLoading: false
+      }));
+    } catch (err) {
+      setState(prev => ({ ...prev, error: "Couldn't fetch user data", isLoading: false }));
+    }
+  };
+
+  // Handle form field changes
+  const handleChange = (field, value) => {
+    setState(prev => ({ ...prev, [field]: value }));
+  };
+
+  // Toggle dark mode
+  const toggleDarkMode = () => {
+    const newMode = !state.darkMode;
+    setState(prev => ({ ...prev, darkMode: newMode }));
+    localStorage.setItem("darkMode", newMode.toString());
+  };
+
+  // Save profile changes
   const handleSaveChanges = async () => {
     try {
       await axios.put(`http://localhost:5000/api/profile/saveChanges/${id}`, {
-        bio,
-        city,
-        phone,
-        profession,
+        bio: state.bio,
+        city: state.city,
+        phone: state.phone,
+        profession: state.profession,
       });
-      setSaveChanges("Changes saved successfully!");
-      setIsEditing(false);
-      setTimeout(() => setSaveChanges(""), 3000);
+      setState(prev => ({
+        ...prev,
+        saveChanges: "Changes saved successfully!",
+        isEditing: false
+      }));
+      setTimeout(() => handleChange('saveChanges', ""), 3000);
     } catch (err) {
-      setError("Couldn't save changes");
+      setState(prev => ({ ...prev, error: "Couldn't save changes" }));
     }
   };
 
-  const handleEditToggle = () => {
-    setIsEditing(!isEditing);
-    setSaveChanges("");
-  };
-
+  // Delete a post
   const handleDeletePost = async (postId) => {
     try {
-      const res = await axios.delete(`http://localhost:5000/api/posts/${postId}`);
-      if (res.status === 200) {
-        setTimeout(() => {
-          setUserPosts(userPosts.filter(post => post._id !== postId));
-          setShowMenu(null);
-          setShowConfirm(false);
-        }, 400);
-      } else {
-        setError("Couldn't delete the post");
-      }
+      await axios.delete(`http://localhost:5000/api/posts/${postId}`);
+      setState(prev => ({
+        ...prev,
+        userPosts: prev.userPosts.filter(post => post._id !== postId),
+        showMenu: null,
+        showConfirm: false
+      }));
     } catch (err) {
-      console.error("Error deleting post:", err);
+      setState(prev => ({ ...prev, error: "Couldn't delete the post" }));
     }
   };
 
-  const confirmDelete = (postId) => {
-    setPostToDelete(postId);
-    setShowConfirm(true);
-    setShowMenu(null);
-  };
-
+  // Update profile photo
   const editPhoto = async (file) => {
     if (!file) return;
 
@@ -122,188 +152,429 @@ const Profile = () => {
     formData.append("image", file);
 
     try {
-      const res = await axios.put(`http://localhost:5000/api/profile/editPhoto/${id}`,formData, {
+      await axios.put(`http://localhost:5000/api/profile/editPhoto/${id}`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-
-      if (res.status === 200) {
-        window.location.reload(); // Or re-fetch user
-      }
+      fetchUserData(); // Refresh user data
     } catch (error) {
-      console.error("Error editing photo:", error);
+      setState(prev => ({ ...prev, error: "Error updating photo" }));
     }
   };
 
-  if (error) return <div className="text-red-500 text-center py-10 text-lg">{error}</div>;
-  if (!userData) return <div className="text-center mt-10 text-gray-600">Loading profile...</div>;
+  // Format date
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  if (state.error) return <div className="text-red-500 text-center py-10 text-lg">{state.error}</div>;
+  if (state.isLoading) return <div className="text-center mt-10 text-gray-600">Loading profile...</div>;
+  if (!state.userData) return <div className="text-center mt-10 text-gray-600">User not found</div>;
 
   return (
-    <div className="w-full mx-auto bg-[#f3f4f6] py-10">
-      <div className="w-full md:w-2/3 mx-auto px-4">
-        {/* Header */}
-        <div className="bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl shadow-lg h-64 flex items-end px-4 sm:px-8 pb-8">
-          <div className="flex flex-wrap items-end gap-4 sm:gap-6 w-full">
-            <div
-              className={`relative group ${decoded && userData._id === decoded.id ? "cursor-pointer" : ""} `}
-              onClick={() => {
-                if (decoded && userData._id === decoded.id) {
-                  fileInputRef.current.click();
-                }
-              }}
-            >
-              <input
-                type="file"
-                accept="image/*"
-                ref={fileInputRef}
-                className="hidden"
-                onChange={(e) => {
-                  const file = e.target.files[0];
-                  if (file) {
-                    editPhoto(file);
-                  }
-                }}
-              />
-              <img
-                src={`http://localhost:5000/${userData.image}`}
-                alt="Profile"
-                className="w-24 sm:w-32 h-24 sm:h-32 rounded-full border-4 border-white object-cover shadow-md"
-              />
-              {decoded && userData._id === decoded.id && (
-                <div className="absolute inset-0 rounded-full bg-black bg-opacity-30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
-                  <span className="text-white text-sm hover:underline">Change</span>
-                </div>
-              )}
-            </div>
+    <div className={`min-h-screen ${state.darkMode ? 'bg-gray-900 text-gray-100' : 'bg-gray-50 text-gray-900'}`}>
+      {/* Dark Mode Toggle */}
+      <div className="flex justify-end p-4">
+        <button
+          onClick={toggleDarkMode}
+          className={`p-2 rounded-full ${state.darkMode ? 'bg-gray-700 text-yellow-300' : 'bg-gray-200 text-gray-700'}`}
+          aria-label="Toggle dark mode"
+        >
+          {state.darkMode ? <FaSun className="w-5 h-5" /> : <FaMoon className="w-5 h-5" />}
+        </button>
+      </div>
 
-            <div className="flex flex-col justify-center gap-2">
-              <h1 className="text-2xl sm:text-3xl font-bold text-white">{userData.fullname}</h1>
-              <p className="text-gray-50 text-sm">{bio || "No profession specified"}</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Toggle Buttons */}
-        <div className="flex justify-center mt-10 gap-4">
-          <button onClick={() => setShowPosts(false)} className="w-1/2 px-6 py-3 text-black font-semibold">
-            Profile Info
-            <div className={`w-full px-6 py-3 text-black font-semibold ${!showPosts ? "flex border-b-2 border-black showPr" : "flex border-b-2 border-grey-200"}`}></div>
-          </button>
-          <button onClick={() => setShowPosts(true)} className="w-1/2 px-6 py-3 text-black font-semibold">
-            Posts
-            <div className={`w-full px-6 py-3 text-black font-semibold ${showPosts ? "flex border-b-2 border-black showPo" : "flex border-b-2 border-grey-200"}`}></div>
-          </button>
-        </div>
-
-        {/* Profile Info */}
-        <div ref={infoRef} className={`mt-10 ${showPosts ? "hidden" : "block"}`}>
-          <div className="bg-white shadow-md rounded-xl p-6 space-y-6">
-            <div className="flex justify-between items-center border-b pb-4">
-              <h2 className="text-xl font-semibold text-gray-800">Profile Information</h2>
-              {decoded && userData._id === decoded.id && (
-                <button
-                  onClick={handleEditToggle}
-                  className="text-sm px-4 py-2 rounded-md bg-gray-100 hover:bg-gray-200 text-gray-700"
-                >
-                  {isEditing ? "Cancel" : "Edit Profile"}
-                </button>
-              )}
-            </div>
-
-            {[
-              ["Full Name", userData.fullname],
-              ["Email", userData.email],
-              ["Profession", profession, setProfession],
-              ["Location", city, setCity],
-              ["Phone", phone, setPhone],
-              ["Bio", bio, setBio, true],
-            ].map(([label, value, setter, isTextArea]) => (
-              <div key={label} className="flex flex-col sm:flex-row sm:items-center gap-4">
-                <label className="w-32 text-gray-600 font-medium">{label}</label>
-                {isEditing && setter ? (
-                  isTextArea ? (
-                    <textarea className="flex-1 border rounded-lg px-3 py-2 min-h-[100px]" value={value} onChange={(e) => setter(e.target.value)} />
-                  ) : (
-                    <input className="flex-1 border rounded-lg px-3 py-2" value={value} onChange={(e) => setter(e.target.value)} />
-                  )
-                ) : (
-                  <div className="flex-1 text-gray-800 whitespace-pre-line">{value || "Not specified"}</div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex flex-col md:flex-row gap-8">
+          {/* Sidebar */}
+          <div 
+            ref={addToRefs}
+            className={`w-full md:w-1/3 lg:w-1/4 ${state.darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-md p-6 h-fit flex top-8`}
+          >
+            <div className="flex flex-col items-center">
+              {/* Profile Picture */}
+              <div className="relative group mb-4">
+                <input
+                  type="file"
+                  accept="image/*"
+                  ref={fileInputRef}
+                  className="hidden"
+                  onChange={(e) => e.target.files[0] && editPhoto(e.target.files[0])}
+                />
+                <img
+                  src={`http://localhost:5000/${state.userData.image}`}
+                  alt="Profile"
+                  className="w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover"
+                />
+                {decoded && state.userData._id === decoded.id && (
+                  <button
+                    onClick={() => fileInputRef.current.click()}
+                    className="absolute bottom-0 right-0 bg-blue-500 text-white p-2 rounded-full hover:bg-blue-600 transition"
+                    aria-label="Change profile picture"
+                  >
+                    <FaUserEdit className="w-4 h-4" />
+                  </button>
                 )}
               </div>
-            ))}
 
-            {isEditing && (
-              <div className="pt-4 flex items-center gap-4">
-                <button onClick={handleSaveChanges} className="px-6 py-2 bg-[#0077B6] text-white rounded-lg hover:bg-[#006BA3]">
-                  Save Changes
+              <h2 className="text-xl font-bold text-center">{state.userData.fullname}</h2>
+              <p className={`text-sm ${state.darkMode ? 'text-gray-300' : 'text-gray-600'} text-center mb-6`}>
+                {state.profession || "No profession specified"}
+              </p>
+
+              {/* Profile Completion */}
+              {decoded && state.userData._id === decoded.id && (
+                <div className={`w-full p-4 rounded-lg mb-6 ${state.darkMode ? 'bg-gray-700' : 'bg-blue-50'}`}>
+                  <div className="flex justify-between items-center mb-2">
+                    <h3 className={`text-sm font-medium ${state.darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
+                      Profile Completion
+                    </h3>
+                    <span className="text-xs font-semibold text-blue-600">60%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-1.5">
+                    <div 
+                      className="bg-blue-600 h-1.5 rounded-full" 
+                      style={{ width: '60%' }}
+                    />
+                  </div>
+                  <p className={`text-xs mt-2 ${state.darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                    Complete your profile to get better visibility
+                  </p>
+                </div>
+              )}
+
+              {/* Stats */}
+              <div className="flex justify-between w-full border-t pt-4 mb-6">
+                {[
+                  { value: state.userPosts.length, label: "Posts" },
+                  { value: 0, label: "Followers" },
+                  { value: 0, label: "Following" }
+                ].map((stat, index) => (
+                  <div key={index} className="text-center px-2">
+                    <p className="font-bold">{stat.value}</p>
+                    <p className={`text-xs ${state.darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                      {stat.label}
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Contact Info */}
+              <div className="w-full space-y-3">
+                <div className="flex items-center">
+                  <FaMapMarkerAlt className={`w-5 h-5 mr-2 ${state.darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+                  <span className={`text-sm ${state.darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                    {state.city || "Not specified"}
+                  </span>
+                </div>
+                <div className="flex items-center">
+                  <FaPhone className={`w-5 h-5 mr-2 ${state.darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+                  <span className={`text-sm ${state.darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                    {state.phone || "Not specified"}
+                  </span>
+                </div>
+              </div>
+
+              {/* Bio */}
+              <div className="w-full mt-6">
+                <h3 className={`font-medium mb-2 ${state.darkMode ? 'text-gray-200' : 'text-gray-800'}`}>About</h3>
+                <p className={`text-sm ${state.darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                  {state.bio || "No bio provided"}
+                </p>
+              </div>
+
+              {/* Edit Profile Button */}
+              {decoded && state.userData._id === decoded.id && (
+                <button
+                  onClick={() => handleChange('isEditing', !state.isEditing)}
+                  className="w-full mt-6 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+                >
+                  {state.isEditing ? "Cancel Editing" : "Edit Profile"}
                 </button>
-                {saveChanges && <span className="text-green-600 text-sm">{saveChanges}</span>}
+              )}
+            </div>
+          </div>
+
+          {/* Main Content */}
+          <div className="w-full md:w-2/3 lg:w-3/4">
+            {/* Tabs */}
+            <div 
+              ref={addToRefs}
+              className={`border-b ${state.darkMode ? 'border-gray-700' : 'border-gray-200'} mb-6`}
+            >
+              <nav className="flex -mb-px">
+                {['Posts', 'Saved', 'About'].map((tab) => (
+                  <button
+                    key={tab}
+                    className={`px-4 py-3 text-sm font-medium ${
+                      state.activeTab === tab
+                        ? `${state.darkMode ? 'border-blue-500 text-blue-400' : 'border-blue-500 text-blue-600'} border-b-2`
+                        : `${state.darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'}`
+                    }`}
+                    onClick={() => handleChange('activeTab', tab)}
+                  >
+                    {tab}
+                  </button>
+                ))}
+              </nav>
+            </div>
+
+            {/* Profile Editing */}
+            {state.isEditing && (
+              <div 
+                ref={addToRefs}
+                className={`${state.darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-md p-6 mb-6`}
+              >
+                <h2 className="text-xl font-semibold mb-4">Edit Profile</h2>
+                <div className="space-y-4">
+                  {[
+                    { label: "Profession", value: state.profession, field: 'profession' },
+                    { label: "Location", value: state.city, field: 'city' },
+                    { label: "Phone", value: state.phone, field: 'phone', type: 'tel' },
+                    { label: "Bio", value: state.bio, field: 'bio', isTextArea: true }
+                  ].map((item) => (
+                    <div key={item.label} className="flex flex-col">
+                      <label className={`mb-1 text-sm font-medium ${state.darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                        {item.label}
+                      </label>
+                      {item.isTextArea ? (
+                        <textarea
+                          className={`rounded-lg px-3 py-2 ${
+                            state.darkMode ? 'bg-gray-700 text-white border-gray-600' : 'bg-white border-gray-300'
+                          } border`}
+                          value={item.value}
+                          onChange={(e) => handleChange(item.field, e.target.value)}
+                          rows={4}
+                        />
+                      ) : (
+                        <input
+                          type={item.type || "text"}
+                          className={`rounded-lg px-3 py-2 ${
+                            state.darkMode ? 'bg-gray-700 text-white border-gray-600' : 'bg-white border-gray-300'
+                          } border`}
+                          value={item.value}
+                          onChange={(e) => handleChange(item.field, e.target.value)}
+                        />
+                      )}
+                    </div>
+                  ))}
+                  <div className="flex justify-end pt-2">
+                    <button
+                      onClick={handleSaveChanges}
+                      className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+                    >
+                      Save Changes
+                    </button>
+                  </div>
+                  {state.saveChanges && (
+                    <div className={`text-sm mt-2 ${
+                      state.saveChanges.includes('success') ? 'text-green-500' : 'text-red-500'
+                    }`}>
+                      {state.saveChanges}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Posts */}
+            {state.activeTab === "Posts" && (
+              <div className="grid grid-cols-1 gap-6">
+                {state.userPosts.length > 0 ? (
+                  state.userPosts.map((post) => (
+                    <div 
+                      key={post._id}
+                      ref={addToRefs}
+                      className={`rounded-xl overflow-hidden transition-shadow ${
+                        state.darkMode ? 'bg-gray-800 hover:shadow-lg' : 'bg-white hover:shadow-md'
+                      } shadow-sm`}
+                    >
+                      {/* Post header */}
+                      <div className={`p-4 border-b ${state.darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center space-x-3">
+                            <img
+                              src={`http://localhost:5000/${state.userData.image}`}
+                              className="w-10 h-10 rounded-full object-cover"
+                              alt="User"
+                            />
+                            <div>
+                              <h3 className={`font-semibold ${state.darkMode ? 'text-white' : 'text-gray-900'}`}>
+                                {state.userData.fullname}
+                              </h3>
+                              <p className={`text-xs ${state.darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                {formatDate(post.createdAt)}
+                              </p>
+                            </div>
+                          </div>
+                          {state.userData._id === decoded?.id && (
+                            <div className="relative">
+                              <button
+                                onClick={() => handleChange(
+                                  'showMenu', 
+                                  post._id === state.showMenu ? null : post._id
+                                )}
+                                className={`p-1 rounded-full ${
+                                  state.darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'
+                                }`}
+                                aria-label="Post options"
+                              >
+                                <FaEllipsisV className="w-5 h-5" />
+                              </button>
+                              {state.showMenu === post._id && (
+                                <div className={`absolute right-0 mt-1 w-48 rounded-md shadow-lg z-10 ${
+                                  state.darkMode ? 'bg-gray-700' : 'bg-white'
+                                } ring-1 ${state.darkMode ? 'ring-gray-600' : 'ring-gray-200'}`}>
+                                  <div className="py-1">
+                                    <button
+                                      onClick={() => {
+                                        handleChange('postToDelete', post._id);
+                                        handleChange('showConfirm', true);
+                                      }}
+                                      className={`block w-full text-left px-4 py-2 text-sm ${
+                                        state.darkMode ? 'text-red-400 hover:bg-gray-600' : 'text-red-600 hover:bg-gray-100'
+                                      }`}
+                                    >
+                                      Delete Post
+                                    </button>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Post content */}
+                      <div className="p-4">
+                        <p className={`mb-3 ${state.darkMode ? 'text-gray-300' : 'text-gray-800'}`}>
+                          {post.content}
+                        </p>
+                        {post.image && (
+                          <img
+                            src={`http://localhost:5000/${post.image}`}
+                            className="w-full h-64 object-cover rounded-lg"
+                            alt="Post"
+                          />
+                        )}
+                      </div>
+
+                      {/* Post actions */}
+                      <div className={`p-3 border-t ${
+                        state.darkMode ? 'border-gray-700' : 'border-gray-200'
+                      } flex space-x-4`}>
+                        <button className={`flex items-center space-x-1 ${
+                          state.darkMode ? 'text-gray-400 hover:text-blue-400' : 'text-gray-500 hover:text-blue-500'
+                        }`}>
+                          <FaHeart className="w-5 h-5" />
+                          <span className="text-sm">Like</span>
+                        </button>
+                        <button className={`flex items-center space-x-1 ${
+                          state.darkMode ? 'text-gray-400 hover:text-green-400' : 'text-gray-500 hover:text-green-500'
+                        }`}>
+                          <FaComment className="w-5 h-5" />
+                          <span className="text-sm">Comment</span>
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div 
+                    ref={addToRefs}
+                    className={`text-center py-10 rounded-xl ${
+                      state.darkMode ? 'bg-gray-800' : 'bg-white'
+                    } shadow-sm`}
+                  >
+                    <p className={`${state.darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                      No posts yet. Start sharing your journeys!
+                    </p>
+                    {decoded && state.userData._id === decoded.id && (
+                      <button className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">
+                        Create Your First Post
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* About Tab */}
+            {state.activeTab === "About" && (
+              <div 
+                ref={addToRefs}
+                className={`${state.darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-md p-6`}
+              >
+                <h2 className="text-xl font-semibold mb-4">About {state.userData.fullname}</h2>
+                <div className="space-y-6">
+                  <div>
+                    <h3 className={`font-medium mb-2 ${state.darkMode ? 'text-gray-300' : 'text-gray-800'}`}>Bio</h3>
+                    <p className={`${state.darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                      {state.bio || "No bio provided"}
+                    </p>
+                  </div>
+                  <div>
+                    <h3 className={`font-medium mb-2 ${state.darkMode ? 'text-gray-300' : 'text-gray-800'}`}>Details</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {[
+                        { label: "Profession", value: state.profession },
+                        { label: "Location", value: state.city },
+                        { label: "Phone", value: state.phone },
+                        { label: "Member Since", value: formatDate(state.userData.createdAt) }
+                      ].map((item, index) => (
+                        <div key={index}>
+                          <p className={`text-sm ${state.darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                            {item.label}
+                          </p>
+                          <p className={`${state.darkMode ? 'text-gray-300' : 'text-gray-800'}`}>
+                            {item.value || "Not specified"}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
           </div>
         </div>
-
-        {/* Posts */}
-        <div ref={postRef} className={`mt-10 ${showPosts ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6" : "hidden"}`}>
-          {userPosts.length > 0 ? (
-            userPosts.map((post) => (
-              <div key={post._id} className="bg-white shadow-md rounded-xl overflow-hidden">
-                <div className="flex items-center justify-between p-4 relative">
-                  <div className="flex items-center gap-3">
-                    <img src={`http://localhost:5000/${userData.image}`} alt="User" className="w-10 h-10 rounded-full object-cover" />
-                    <div>
-                      <p className="text-sm font-semibold">{userData.fullname}</p>
-                      <p className="text-xs text-gray-500">{new Date(post.createdAt).toLocaleDateString()}</p>
-                    </div>
-                  </div>
-                  {userData._id === decoded.id && (
-                    <div
-                      onClick={() => setShowMenu(post._id === showMenu ? null : post._id)}
-                      className="cursor-pointer p-2 hover:bg-gray-200 rounded-full"
-                    >
-                      <div className="w-1 h-1 bg-black rounded-full mb-0.5"></div>
-                      <div className="w-1 h-1 bg-black rounded-full mb-0.5"></div>
-                      <div className="w-1 h-1 bg-black rounded-full"></div>
-                    </div>
-                  )}
-
-                  {showMenu === post._id && (
-                    <div className="absolute top-14 right-4 bg-white shadow-md rounded-lg w-32 z-10">
-                      {/* <button className="w-full text-left px-4 py-2 hover:bg-gray-100 hover:rounded-lg">Edit</button> */}
-                      <button onClick={() => confirmDelete(post._id)} className="w-full text-left px-4 py-2 hover:bg-gray-100 text-red-500">Delete</button>
-                    </div>
-                  )}
-
-                  {showConfirm && (
-                    <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-                      <div className="bg-white rounded-xl shadow-lg max-w-sm w-full p-6">
-                        <h2 className="text-lg font-semibold text-gray-800 mb-4">Confirm Deletion</h2>
-                        <p className="text-gray-600 mb-6">Are you sure you want to delete this post? This action cannot be undone.</p>
-                        <div className="flex justify-end gap-3">
-                          <button onClick={() => setShowConfirm(false)} className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">
-                            No, Cancel
-                          </button>
-                          <button onClick={() => handleDeletePost(postToDelete)} className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
-                            Yes, Delete
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                <p className="text-gray-800 text-sm ml-5 mb-2">
-                  {post.content.length < 200 ? post.content : `${post.content.slice(0, 200)} ...`}
-                </p>
-                {post.image && <img src={`http://localhost:5000/${post.image}`} alt="Post" className="w-full h-48 object-cover" />}
-              </div>
-            ))
-          ) : (
-            <div className="text-center text-gray-500 col-span-full py-10">
-              <p>No posts yet. Start sharing your journeys!</p>
-            </div>
-          )}
-        </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {state.showConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className={`rounded-xl shadow-lg max-w-sm w-full p-6 ${
+            state.darkMode ? 'bg-gray-800' : 'bg-white'
+          }`}>
+            <h2 className={`text-lg font-semibold mb-4 ${
+              state.darkMode ? 'text-white' : 'text-gray-800'
+            }`}>
+              Confirm Deletion
+            </h2>
+            <p className={`mb-6 ${state.darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+              Are you sure you want to delete this post? This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => handleChange('showConfirm', false)}
+                className={`px-4 py-2 rounded-lg ${
+                  state.darkMode ? 'bg-gray-700 text-gray-200 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDeletePost(state.postToDelete)}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

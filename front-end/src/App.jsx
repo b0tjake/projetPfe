@@ -15,7 +15,9 @@ import ManageUsers from "./admin/manageUsers";
 import ManageSuggestions from "./admin/manageSuggestions";
 import ManagePosts from "./admin/managePosts";
 import { jwtDecode } from "jwt-decode";
+import About from "./components/About";
 import NotFoundPage from "./notFoundPage";
+import { DarkModeProvider } from "./assets/darkmode";
 
 
 function AppContent({ setLoading, loading }) {
@@ -63,6 +65,7 @@ const navigate = useNavigate();
           <Route path="/profile/:id" element={<Profile />} />
           <Route path="/login" element={<Login setLoading={setLoading} />} />
           <Route path="/register" element={<Register setLoading={setLoading} />} />
+          <Route path="/about" element={<About/>}/>
           {/* <Route path="/adminDash" element={<AdminDash/>} /> */}
           {user?.role === "admin" ? 
           <>
@@ -94,7 +97,10 @@ function App() {
 
   return (
     <BrowserRouter>
+    <DarkModeProvider>
       <AppContent setLoading={setLoading} loading={loading} />
+    </DarkModeProvider>
+
     </BrowserRouter>
   );
 }
