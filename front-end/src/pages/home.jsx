@@ -1,28 +1,59 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import Sidebar from "../components/sideBar";
+import { DarkModeContext } from "../assets/darkmode";
+import { FiImage, FiUser, FiUpload, FiX } from "react-icons/fi";
 
 export default function Home() {
   const [posts, setPosts] = useState([]);
   const [error, setError] = useState("");
   const [userId, setUserId] = useState(null);
   const [commentInputs, setCommentInputs] = useState({});
-  const [showComments, setShowComments] = useState({}); // Track which posts show comments
+  const [showComments, setShowComments] = useState({});
   const token = localStorage.getItem("token");
+  const { darkMode } = useContext(DarkModeContext);
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
+  const [content, setContent] = useState("");
+  const [image, setImage] = useState(null);
+  const [preview, setPreview] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   useEffect(() => {
     if (token) {
-      const decoded = jwtDecode(token);
-      setUserId(decoded.id);
+      try {
+        const decodedToken = jwtDecode(token);
+        setUser(decodedToken);
+        setUserId(decodedToken.id);
+      } catch (error) {
+        console.error("Error decoding token:", error);
+      }
     }
   }, [token]);
 
   useEffect(() => {
+    if (image) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreview(reader.result);
+      };
+      reader.readAsDataURL(image);
+    } else {
+      setPreview(null);
+    }
+  }, [image]);
+
+  useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/posts");
+        const response = await axios.get("http://localhost:5000/api/posts", {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
         setPosts(response.data);
         const initialInputs = {};
         response.data.forEach((post) => {
@@ -32,11 +63,57 @@ export default function Home() {
       } catch (err) {
         setError("Failed to fetch posts.");
         console.error(err);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchPosts();
-  }, []);
+  }, [token]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setIsSubmitting(true);
+
+    if (!user) {
+      setError("Please log in to create a post.");
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (!content.trim()) {
+      setError("Post content cannot be empty.");
+      setIsSubmitting(false);
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("user", user.id);
+    formData.append("content", content);
+    if (image) formData.append("image", image);
+
+    try {
+      const response = await axios.post("http://localhost:5000/api/posts", formData, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      if (response.status === 201) {
+        setContent("");
+        setImage(null);
+        setPreview(null);
+        setPosts(prevPosts => [response.data, ...prevPosts]);
+        setIsCreateModalOpen(false);
+      }
+    } catch (err) {
+      console.error("Error creating post:", err.response?.data || err.message);
+      setError(err.response?.data?.message || "Error creating post, please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const handleLike = async (postId) => {
     try {
@@ -109,345 +186,347 @@ export default function Home() {
   };
 
   return (
-    <div className="bg-[#f3f4f6]">
-    <div className="flex min-h-screen bg-[#f3f4f6]">
-      {/* Sidebar - hidden on mobile/tablet, doesn't take space */}
-      <div className="hidden lg:block mt-10">
+    <div className={`min-h-screen flex ${darkMode ? 'bg-gray-900' : 'bg-[#f3f4f6]'}`}>
+      {/* Sidebar */}
+      <div className={`hidden lg:block h-full min-h-screen transition-colors duration-300 ${darkMode ? 'bg-gray-800 border-r border-gray-700' : 'bg-white border-r border-gray-200'}`}>
         <Sidebar />
       </div>
-
       {/* Main content */}
       <div className="flex-1 p-4 md:p-8 flex justify-center">
         <div className="w-full max-w-2xl">
           {/* Create Post Button */}
-          <div className="py-3 mb-3 border-b border-gray-200">
-            <Link
-              to="/addPost"
-              className="w-full bg-white p-3 rounded-xl shadow-sm border border-gray-200 flex items-center hover:bg-gray-50 transition-all duration-200 hover:shadow-md"
+          <div className={`py-3 mb-3 border-b transition-colors duration-300 ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+            <button
+              onClick={() => setIsCreateModalOpen(true)}
+              className={`w-full flex items-center rounded-xl shadow-sm border transition-all duration-200 hover:shadow-md ${darkMode ? 'bg-gray-900 border-gray-700 hover:bg-gray-800' : 'bg-white border-gray-200 hover:bg-gray-50'}`}
             >
-              {/* <img
-                src={`http://localhost:5000/${jwtDecode(token)?.image}`}
-                alt="User"
-                className="w-10 h-10 rounded-full mr-3 object-cover border-2 border-blue-100"
-              /> */}
-              <div className="flex-1 bg-gray-100 hover:bg-gray-200 rounded-full px-4 py-2.5 transition-colors duration-200">
-                <span className="text-gray-500 text-sm font-medium">
-                  What's on your mind?
-                </span>
+              <div className={`flex-1 rounded-full px-4 py-2.5 transition-colors duration-200 ${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-gray-100 hover:bg-gray-200'}`}>
+                <span className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>What's on your mind?</span>
               </div>
-              <div className="ml-2 p-1.5 rounded-lg bg-gray-100 transition-colors duration-200">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5 text-gray-500"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                    className="bg-[#0077B6] hover:bg-[#006BA3]"
-                  />
-                </svg>
+              <div className={`ml-2 p-1.5 rounded-lg transition-colors duration-200 ${darkMode ? 'bg-gray-800' : 'bg-gray-100'}`}>
+                <FiImage className={`h-5 w-5 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
               </div>
-            </Link>
+            </button>
           </div>
 
           {error && (
-            <div className="mb-6 p-4 bg-red-50 text-red-700 rounded-lg border border-red-200">
-              {error}
-            </div>
+            <div className={`mb-6 p-4 rounded-lg border transition-colors duration-300 ${darkMode ? 'bg-red-900 text-red-200 border-red-700' : 'bg-red-50 text-red-700 border-red-200'}`}>{error}</div>
           )}
 
-          {posts.length === 0 ? (
+          {/* Posts List */}
+          {loading ? (
+            <div className="flex justify-center items-center h-64">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
+            </div>
+          ) : posts.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-gray-500 text-lg">No posts yet.</p>
+              <p className={`text-lg ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>No posts yet.</p>
             </div>
           ) : (
-          posts.map((post) => (
-            <div
-              key={post._id}
-              className="bg-white rounded-xl shadow-md mb-1 border border-gray-200 overflow-hidden"
-            >
-              {/* User info section with timestamp */}
-              <div className="flex items-center p-4 pb-2">
-                <Link
-                  to={`profile/${post.user?._id}`}
-                  className="flex-shrink-0"
-                >
-                  <img
-                    src={`http://localhost:5000/${post.user?.image}`}
-                    alt="User"
-                    className="w-10 h-10 sm:w-12 sm:h-12 rounded-full mr-3 object-cover border-2 border-blue-100 shadow-sm"
-                  />
-                </Link>
-                <div className="flex-1">
-                  <Link
-                    to={`profile/${post.user?._id}`}
-                    className="font-semibold text-gray-800 text-sm sm:text-base hover:underline"
-                  >
-                    {post.user?.fullname}
-                  </Link>
-                  <div className="flex items-center text-gray-500 text-xs mt-1">
-                    <span>
-                     {post.date}
-                    </span>
-                    <span className="mx-1">•</span>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-3 w-3"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"
+            posts.map((post) => (
+              <div 
+                key={post._id} 
+                className={`mb-4 rounded-lg shadow-sm border overflow-hidden transition-all duration-300 ${
+                  darkMode 
+                    ? 'bg-gray-800 border-gray-700' 
+                    : 'bg-white border-gray-200'
+                }`}
+              >
+                {/* User info section with timestamp */}
+                <div className="p-3">
+                  <div className="flex items-center">
+                    <Link to={`profile/${post.user?._id}`} className="flex-shrink-0">
+                      <img 
+                        src={`http://localhost:5000/${post.user?.image}`} 
+                        alt="User" 
+                        className="w-10 h-10 rounded-full object-cover" 
                       />
-                    </svg>
+                    </Link>
+                    <div className="flex-1 ml-3">
+                      <Link 
+                        to={`profile/${post.user?._id}`} 
+                        className={`font-semibold text-[15px] hover:underline ${
+                          darkMode ? 'text-gray-100' : 'text-gray-900'
+                        }`}
+                      >
+                        {post.user?.fullname}
+                      </Link>
+                      <div className={`flex items-center text-[13px] ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                        <span>{post.date}</span>
+                        <span className="mx-1">•</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </div>
+                    </div>
+                    <button className={`p-2 rounded-full hover:bg-gray-100 transition-colors ${darkMode ? 'hover:bg-gray-700' : ''}`}>
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                      </svg>
+                    </button>
                   </div>
                 </div>
-              </div>
 
-              {/* Post content */}
-              <div className="px-4 pb-2">
-                <p className="text-gray-800 text-sm sm:text-base leading-relaxed">
-                  {post.content}
-                </p>
-              </div>
-
-              {/* Post image */}
-              {post.image && (
-                <div className="border-t border-b border-gray-100">
-                  <img
-                    src={`http://localhost:5000/${post.image}`}
-                    alt="Post"
-                    className="w-full h-auto object-cover max-h-[500px]"
-                  />
+                {/* Post content */}
+                <div className="px-3 pb-3">
+                  <p className={`text-[15px] leading-5 ${darkMode ? 'text-gray-200' : 'text-gray-900'}`}>
+                    {post.content}
+                  </p>
                 </div>
-              )}
 
-              {/* Likes and comments count */}
-              <div className="px-4 pt-2 pb-1 border-b border-gray-100 flex items-center justify-between text-sm text-gray-500">
-                {post.likesCount > 0 && (
+                {/* Post image */}
+                {post.image && (
+                  <div className="relative">
+                    <img 
+                      src={`http://localhost:5000/${post.image}`} 
+                      alt="Post" 
+                      className="w-full h-auto object-cover" 
+                    />
+                  </div>
+                )}
+
+                {/* Likes and comments count */}
+                <div className={`px-3 py-2 border-b flex items-center justify-between text-[13px] ${
+                  darkMode ? 'border-gray-700 text-gray-400' : 'border-gray-200 text-gray-500'
+                }`}>
                   <div className="flex items-center">
                     <div className="flex items-center -space-x-1">
                       <div className="bg-blue-500 rounded-full p-1">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-3 w-3 text-white"
-                          viewBox="0 0 20 20"
-                          fill="currentColor"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
-                            clipRule="evenodd"
-                          />
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-white" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
                         </svg>
                       </div>
-                      {/* <div className="bg-red-500 rounded-full p-1">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-3 w-3 text-white"
-                          viewBox="0 0 20 20"
-                          fill="currentColor"
-                        >
-                          <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                          <path
-                            fillRule="evenodd"
-                            d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                      </div> */}
                     </div>
-                    <span className="ml-2">
-                      {post.likesCount}{" "}
-                      {post.likesCount === 1 ? "like" : "likes"}
-                    </span>
+                    <span className="ml-2">{post.likesCount > 0 ? post.likesCount : ''} {post.likesCount === 1 ? "like" : post.likesCount > 1 ? "likes" : ""}</span>
                   </div>
-                )}
-                {post.commentsCount > 0 && (
+                  <div className="flex items-center space-x-4">
+                    {post.commentsCount > 0 && (
+                      <button onClick={() => toggleComments(post._id)} className="hover:underline">
+                        {post.commentsCount} {post.commentsCount === 1 ? "comment" : "comments"}
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Action buttons */}
+                <div className={`px-2 py-1 flex items-center justify-between ${
+                  darkMode ? 'border-gray-700' : 'border-gray-200'
+                }`}>
+                  <button
+                    onClick={() => handleLike(post._id)}
+                    className={`flex items-center justify-center flex-1 py-2 rounded-md mx-1 hover:bg-gray-100 transition-colors ${
+                      post.likes?.includes(userId) ? "text-blue-600" : ""
+                    } ${darkMode ? 'hover:bg-gray-700' : ''}`}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 mr-1 ${post.likes?.includes(userId) ? "fill-blue-600" : ""}`} viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
+                    </svg>
+                    <span className="text-[15px] font-medium">Like</span>
+                  </button>
+
                   <button
                     onClick={() => toggleComments(post._id)}
-                    className="hover:underline"
+                    className={`flex items-center justify-center flex-1 py-2 rounded-md mx-1 hover:bg-gray-100 transition-colors ${darkMode ? 'hover:bg-gray-700' : ''}`}
                   >
-                    {post.commentsCount}{" "}
-                    {post.commentsCount === 1 ? "comment" : "comments"}
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                    </svg>
+                    <span className="text-[15px] font-medium">Comment</span>
                   </button>
-                )}
-              </div>
 
-              {/* Action buttons */}
-              <div className="px-2 py-1 flex items-center justify-between text-gray-500">
-                <button
-                  onClick={() => token ? handleLike(post._id) : setError("Please log in to like a post.")}
-                  className={`flex items-center justify-center flex-1 py-2 rounded-md mx-1 hover:bg-gray-100 transition-colors ${
-                    post.likes?.includes(userId) ? "text-blue-600" : ""
-                  }`}
-                >
-                  
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className={`h-5 w-5 mr-1 ${
-                      post.likes?.includes(userId) ? "fill-blue-600" : ""
-                    }`}
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  {/* <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className={`h-5 w-5 mr-1 ${
-                      post.likes?.includes(userId) ? "fill-blue-600" : ""
-                    }`}
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={post.likes?.includes(userId) ? 0 : 1.5}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"
-                    />
-                  </svg> */}
-                  <span className="text-sm font-medium">Like</span>
-                </button>
+                  <button className={`flex items-center justify-center flex-1 py-2 rounded-md mx-1 hover:bg-gray-100 transition-colors ${darkMode ? 'hover:bg-gray-700' : ''}`}>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                    </svg>
+                    <span className="text-[15px] font-medium">Share</span>
+                  </button>
+                </div>
 
-                <button
-                  onClick={() => toggleComments(post._id)}
-                  className="flex items-center justify-center flex-1 py-2 rounded-md mx-1 hover:bg-gray-100 transition-colors"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5 mr-1"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={1.5}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                    />
-                  </svg>
-                  <span className="text-sm font-medium">Comment</span>
-                </button>
-
-                <button className="flex items-center justify-center flex-1 py-2 rounded-md mx-1 hover:bg-gray-100 transition-colors">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5 mr-1"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={1.5}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
-                    />
-                  </svg>
-                  <span className="text-sm font-medium">Share</span>
-                </button>
-              </div>
-
-              {/* Comments section - only shown when toggled */}
-              {showComments[post._id] && (
-                <div className="bg-gray-50 px-4 py-2 border-t border-gray-100">
-                  {/* Existing comments */}
-                  {post.comments?.length > 0 && (
-                    <div className="space-y-3 mb-3">
-                      {post.comments.map((comment, index) => (
-                        <div key={index} className="flex items-start">
-                          <Link
-                            to={`profile/${comment.user?._id}`}
-                            className="flex-shrink-0"
-                          >
-                            <img
-                              src={`http://localhost:5000/${comment.user?.image}`}
-                              alt="User"
-                              className="w-8 h-8 rounded-full mr-2 object-cover border border-gray-200"
-                            />
-                          </Link>
-                          <div className="flex-1">
-                            <div className="bg-white p-3 rounded-lg shadow-sm">
-                              <Link
-                                to={`profile/${comment.user?._id}`}
-                                className="font-semibold text-sm hover:underline"
-                              >
-                                {comment.user?.fullname}
-                              </Link>
-                              <p className="text-sm text-gray-700 mt-1">
-                                {comment.text}
-                              </p>
-                              <div className="flex items-center mt-2 text-xs text-gray-500 space-x-3">
-                                <button className="hover:underline">
-                                  Like
-                                </button>
-                                <span>
-                                  {new Date(
-                                    comment.createdAt
-                                  ).toLocaleDateString()}
-                                </span>
+                {/* Comments section */}
+                {showComments[post._id] && (
+                  <div className={`px-3 py-2 border-t ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'}`}>
+                    {/* Existing comments */}
+                    {post.comments?.length > 0 && (
+                      <div className="space-y-2 mb-3">
+                        {post.comments.map((comment, index) => (
+                          <div key={index} className="flex items-start">
+                            <Link to={`profile/${comment.user?._id}`} className="flex-shrink-0">
+                              <img src={`http://localhost:5000/${comment.user?.image}`} alt="User" className="w-8 h-8 rounded-full object-cover" />
+                            </Link>
+                            <div className="flex-1 ml-2">
+                              <div className={`inline-block px-3 py-2 rounded-2xl ${
+                                darkMode ? 'bg-gray-700' : 'bg-gray-100'
+                              }`}>
+                                <Link to={`profile/${comment.user?._id}`} className={`font-semibold text-[13px] hover:underline ${
+                                  darkMode ? 'text-gray-100' : 'text-gray-900'
+                                }`}>
+                                  {comment.user?.fullname}
+                                </Link>
+                                <p className={`text-[15px] mt-1 ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
+                                  {comment.text}
+                                </p>
+                              </div>
+                              <div className={`flex items-center mt-1 space-x-3 text-[12px] ${
+                                darkMode ? 'text-gray-400' : 'text-gray-500'
+                              }`}>
+                                <button className="hover:underline font-semibold">Like</button>
+                                <button className="hover:underline font-semibold">Reply</button>
+                                <span>{new Date(comment.createdAt).toLocaleDateString()}</span>
                               </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Comment input */}
-                  <div className="flex items-start">
-                    <img
-                      src={`http://localhost:5000/${jwtDecode(token)?.image}`}
-                      alt="User"
-                      className="w-8 h-8 rounded-full mr-2 object-cover border border-gray-200 flex-shrink-0"
-                    />
-                    <div className="flex-1 flex bg-white rounded-full border border-gray-200 overflow-hidden">
-                      <input
-                        type="text"
-                        value={commentInputs[post._id] || ""}
-                        onChange={(e) =>
-                          handleCommentChange(post._id, e.target.value)
-                        }
-                        placeholder="Write a comment..."
-                        className="flex-1 px-4 py-2 text-sm focus:outline-none"
+                        ))}
+                      </div>
+                    )}
+                    {/* Comment input */}
+                    <div className="flex items-center">
+                      <img 
+                        src={`http://localhost:5000/${jwtDecode(token)?.image}`} 
+                        alt="User" 
+                        className="w-8 h-8 rounded-full object-cover flex-shrink-0" 
                       />
-                      <button
-                        onClick={() => handleComment(post._id)}
-                        className="px-3 text-blue-500 font-medium hover:bg-gray-50 transition-colors"
-                        disabled={!commentInputs[post._id]?.trim()}
-                      >
-                        Post
-                      </button>
+                      <div className={`flex-1 flex rounded-full border overflow-hidden ml-2 ${
+                        darkMode ? 'bg-gray-700 border-gray-600' : 'bg-gray-100 border-gray-200'
+                      }`}>
+                        <input
+                          type="text"
+                          value={commentInputs[post._id] || ""}
+                          onChange={(e) => handleCommentChange(post._id, e.target.value)}
+                          placeholder="Write a comment..."
+                          className={`flex-1 px-4 py-2 text-[15px] focus:outline-none ${
+                            darkMode ? 'bg-gray-700 text-gray-100 placeholder-gray-400' : 'bg-gray-100 text-gray-900 placeholder-gray-500'
+                          }`}
+                        />
+                        <button
+                          onClick={() => handleComment(post._id)}
+                          className={`px-3 font-medium text-[15px] ${
+                            darkMode ? 'text-blue-400 hover:bg-gray-600' : 'text-blue-600 hover:bg-gray-200'
+                          }`}
+                          disabled={!commentInputs[post._id]?.trim()}
+                        >
+                          Post
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
-            {/* <p className="text-red-500 text-sm mt-2 p-2 ">
-
-              {error  === "Please log in to like a post."? error : ""}
-            </p> */}
-            </div>
-          ))
+                )}
+              </div>
+            ))
           )}
         </div>
       </div>
-    </div>
+
+      {/* Create Post Modal */}
+      {isCreateModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm" onClick={() => setIsCreateModalOpen(false)}></div>
+          <div className={`relative w-full max-w-2xl mx-4 rounded-xl shadow-2xl transition-colors duration-300 ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className={`text-xl font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-800'}`}>Create Post</h2>
+                <button
+                  onClick={() => setIsCreateModalOpen(false)}
+                  className={`p-2 rounded-full hover:bg-gray-100 transition-colors ${darkMode ? 'text-gray-400 hover:bg-gray-700' : 'text-gray-500 hover:bg-gray-100'}`}
+                >
+                  <FiX className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="flex items-center mb-4">
+                {user ? (
+                  <img
+                    src={`http://localhost:5000/${user.image}`}
+                    alt="Profile"
+                    className="w-12 h-12 rounded-full object-cover border-2 border-purple-400"
+                  />
+                ) : (
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}>
+                    <FiUser className={`w-6 h-6 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+                  </div>
+                )}
+                <span className={`ml-4 text-lg font-medium ${darkMode ? 'text-gray-100' : 'text-gray-800'}`}>
+                  {user ? user.fullname : "Anonymous User"}
+                </span>
+              </div>
+
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="relative">
+                  <textarea
+                    placeholder="What's on your mind?"
+                    value={content}
+                    onChange={(e) => setContent(e.target.value)}
+                    className={`w-full p-3 border rounded-lg resize-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition-colors duration-300 ${darkMode ? 'bg-gray-900 border-gray-700 text-gray-100 placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'}`}
+                    rows="3"
+                  />
+                  <div className={`absolute bottom-3 right-3 text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                    {content.length}/500
+                  </div>
+                </div>
+
+                {preview && (
+                  <div className="relative">
+                    <img
+                      src={preview}
+                      alt="Preview"
+                      className="w-full rounded-lg border transition-colors duration-300 ${darkMode ? 'border-gray-700' : 'border-gray-200'}"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setImage(null);
+                        setPreview(null);
+                      }}
+                      className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600"
+                    >
+                      ×
+                    </button>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <label className={`flex items-center px-4 py-2 rounded-lg cursor-pointer transition-colors duration-300 ${darkMode ? 'bg-gray-700 hover:bg-gray-600 text-gray-200' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'}`}>
+                    <FiImage className={`mr-2 ${darkMode ? 'text-purple-300' : 'text-purple-600'}`} />
+                    <span>Add Image</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => setImage(e.target.files[0])}
+                      className="hidden"
+                    />
+                  </label>
+
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className={`flex items-center px-6 py-2 rounded-lg font-medium transition-colors duration-300 ${
+                      isSubmitting
+                        ? 'bg-purple-600/50 cursor-not-allowed'
+                        : darkMode
+                          ? 'bg-purple-600 hover:bg-purple-700 text-white shadow-lg shadow-purple-500/20'
+                          : 'bg-purple-600 hover:bg-purple-700 text-white shadow-lg shadow-purple-500/20'
+                    }`}
+                  >
+                    {isSubmitting ? (
+                      <span className="flex items-center">
+                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Posting...
+                      </span>
+                    ) : (
+                      <>
+                        <FiUpload className="mr-2" />
+                        Post
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

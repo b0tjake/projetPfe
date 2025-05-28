@@ -18,6 +18,11 @@ import { jwtDecode } from "jwt-decode";
 import About from "./components/About";
 import NotFoundPage from "./notFoundPage";
 import { DarkModeProvider } from "./assets/darkmode";
+import Messages from "./pages/messages";
+import Notifications from "./pages/notifications";
+import Friends from "./pages/friends";
+import SavedPosts from "./pages/savedPosts";
+import Settings from "./pages/settings";
 
 
 function AppContent({ setLoading, loading }) {
@@ -66,6 +71,11 @@ const navigate = useNavigate();
           <Route path="/login" element={<Login setLoading={setLoading} />} />
           <Route path="/register" element={<Register setLoading={setLoading} />} />
           <Route path="/about" element={<About/>}/>
+          <Route path="/messages" element={<Messages />} />
+          <Route path="/notifications" element={<Notifications />} />
+          <Route path="/friends" element={<Friends />} />
+          <Route path="/saved" element={<SavedPosts />} />
+          <Route path="/settings" element={<Settings />} />
           {/* <Route path="/adminDash" element={<AdminDash/>} /> */}
           {user?.role === "admin" ? 
           <>

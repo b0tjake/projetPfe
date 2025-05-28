@@ -1,8 +1,9 @@
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import { jwtDecode } from "jwt-decode";
 import { motion } from "framer-motion";
 import { FaThumbsUp, FaThumbsDown, FaSearch, FaFilter } from "react-icons/fa";
+import { DarkModeContext } from "../assets/darkmode";
 
 export default function PlaceSuggestions() {
     const [placeData, setPlaceData] = useState([]);
@@ -13,6 +14,7 @@ export default function PlaceSuggestions() {
     const [loading, setLoading] = useState(true);
     const [sortBy, setSortBy] = useState("rating");
     const token = localStorage.getItem("token");
+    const { darkMode } = useContext(DarkModeContext);
 
     useEffect(() => {
         const getPlaces = async () => {
@@ -117,29 +119,29 @@ export default function PlaceSuggestions() {
 
     if (!token) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+            <div className={`min-h-screen flex items-center justify-center ${darkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-blue-50 to-indigo-100'}`}>
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="text-center p-8 bg-white rounded-xl shadow-2xl"
+                    className={`text-center p-8 rounded-xl shadow-2xl ${darkMode ? 'bg-gray-800' : 'bg-white'}`}
                 >
-                    <h1 className="text-4xl font-bold text-red-600 mb-4">Access Denied</h1>
-                    <p className="text-gray-600">Please log in to view suggestions</p>
+                    <h1 className={`text-4xl font-bold mb-4 ${darkMode ? 'text-red-400' : 'text-red-600'}`}>Access Denied</h1>
+                    <p className={`${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Please log in to view suggestions</p>
                 </motion.div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-blue-50 to-indigo-100'}`}>
             <div className="max-w-7xl mx-auto px-4 py-16 sm:px-6 lg:px-8">
                 <motion.div
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
                     className="text-center mb-16"
                 >
-                    <h1 className="text-5xl font-bold text-blue-600 mb-4">Discover Amazing Places</h1>
-                    <p className="text-xl text-gray-600">Explore and vote for your favorite destinations</p>
+                    <h1 className={`text-5xl font-bold mb-4 ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>Discover Amazing Places</h1>
+                    <p className={`text-xl ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Explore and vote for your favorite destinations</p>
                 </motion.div>
 
                 <div className="mb-8 flex flex-col md:flex-row gap-4 justify-between items-center">
@@ -149,14 +151,14 @@ export default function PlaceSuggestions() {
                             placeholder="Search places..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-10 pr-4 text-black py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className={`w-full pl-10 pr-4 py-2 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-transparent ${darkMode ? 'bg-gray-800 border-gray-700 text-gray-100 placeholder-gray-400' : 'bg-white border-gray-300 text-black'}`}
                         />
-                        <FaSearch className="absolute left-3 top-3 text-gray-400" />
+                        <FaSearch className={`absolute left-3 top-3 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`} />
                     </div>
                     <select
                         value={sortBy}
                         onChange={(e) => setSortBy(e.target.value)}
-                        className="w-full md:w-48 text-black px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className={`w-full md:w-48 px-4 py-2 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-transparent ${darkMode ? 'bg-gray-800 border-gray-700 text-gray-100' : 'bg-white border-gray-300 text-black'}`}
                     >
                         <option value="rating">Sort by Rating</option>
                         <option value="upvotes">Sort by Upvotes</option>
@@ -166,7 +168,7 @@ export default function PlaceSuggestions() {
 
                 {loading ? (
                     <div className="flex justify-center items-center h-64">
-                        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div>
+                        <div className={`animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 ${darkMode ? 'border-blue-400' : 'border-blue-500'}`}></div>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -176,7 +178,7 @@ export default function PlaceSuggestions() {
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: index * 0.1 }}
-                                className="group relative bg-white rounded-xl shadow-lg overflow-hidden transform transition-all duration-500 hover:scale-105 hover:shadow-2xl"
+                                className={`group relative rounded-xl shadow-lg overflow-hidden transform transition-all duration-500 hover:scale-105 hover:shadow-2xl ${darkMode ? 'bg-gray-800' : 'bg-white'}`}
                             >
                                 <div className="relative h-[300px]">
                                     <img
