@@ -30,7 +30,6 @@ export default function Sidebar() {
     { id: "notifications", icon: <FiBell />, label: "Notifications", path: "/notifications" },
     { id: "save", icon: <FiBookmark />, label: "Save", path: "/saved" },
     { id: "settings", icon: <FiSettings />, label: "Settings", path: "/settings" },
-    { path: '/profile', icon: <FiUser />, label: 'Profile' },
     { path: '/addpost', icon: <FiPlusCircle />, label: 'Add Post' },
   ];
 

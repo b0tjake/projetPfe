@@ -418,111 +418,98 @@ export default function Home() {
 
       {/* Create Post Modal */}
       {isCreateModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm" onClick={() => setIsCreateModalOpen(false)}></div>
-          <div className={`relative w-full max-w-2xl mx-4 rounded-xl shadow-2xl transition-colors duration-300 ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className={`text-xl font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-800'}`}>Create Post</h2>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className={`rounded-xl shadow-lg max-w-2xl w-full p-6 ${
+            darkMode ? 'bg-gray-800' : 'bg-white'
+          }`}>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className={`text-xl font-semibold ${
+                darkMode ? 'text-white' : 'text-gray-800'
+              }`}>
+                Create New Post
+              </h2>
+              <button
+                onClick={() => setIsCreateModalOpen(false)}
+                className={`p-2 rounded-full ${
+                  darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'
+                }`}
+              >
+                <FiX className="w-6 h-6" />
+              </button>
+            </div>
+            <div className="space-y-4">
+              {/* User info section */}
+              <div className="flex items-center space-x-3 mb-4">
+                <img
+                  src={`http://localhost:5000/${user.image}`}
+                  alt="Profile"
+                  className="w-10 h-10 rounded-full object-cover border-2 border-gray-200 dark:border-gray-700"
+                />
+                <div>
+                  <h3 className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                    {user.fullname}
+                  </h3>
+                  <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                    @{user.username}
+                  </p>
+                </div>
+              </div>
+              <textarea
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                placeholder="What's on your mind?"
+                className={`w-full p-4 rounded-lg resize-none ${
+                  darkMode ? 'bg-gray-700 text-white border-gray-600' : 'bg-white border-gray-300'
+                } border focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+                rows="4"
+              />
+              <div className="flex items-center justify-between">
                 <button
-                  onClick={() => setIsCreateModalOpen(false)}
-                  className={`p-2 rounded-full hover:bg-gray-100 transition-colors ${darkMode ? 'text-gray-400 hover:bg-gray-700' : 'text-gray-500 hover:bg-gray-100'}`}
+                  onClick={() => document.getElementById('imageInput').click()}
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg ${
+                    darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'
+                  }`}
                 >
-                  <FiX className="w-6 h-6" />
+                  <FiImage className="w-5 h-5" />
+                  <span>Add Image</span>
+                </button>
+                <input
+                  id="imageInput"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => setImage(e.target.files[0])}
+                />
+                <button
+                  onClick={handleSubmit}
+                  disabled={!content.trim() || isSubmitting}
+                  className={`px-6 py-2 rounded-lg ${
+                    content.trim() && !isSubmitting
+                      ? 'bg-blue-500 hover:bg-blue-600 text-white'
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  }`}
+                >
+                  {isSubmitting ? 'Posting...' : 'Post'}
                 </button>
               </div>
-
-              <div className="flex items-center mb-4">
-                {user ? (
-                  <img
-                    src={`http://localhost:5000/${user.image}`}
-                    alt="Profile"
-                    className="w-12 h-12 rounded-full object-cover border-2 border-purple-400"
-                  />
-                ) : (
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}>
-                    <FiUser className={`w-6 h-6 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
-                  </div>
-                )}
-                <span className={`ml-4 text-lg font-medium ${darkMode ? 'text-gray-100' : 'text-gray-800'}`}>
-                  {user ? user.fullname : "Anonymous User"}
-                </span>
-              </div>
-
-              <form onSubmit={handleSubmit} className="space-y-4">
+              {preview && (
                 <div className="relative">
-                  <textarea
-                    placeholder="What's on your mind?"
-                    value={content}
-                    onChange={(e) => setContent(e.target.value)}
-                    className={`w-full p-3 border rounded-lg resize-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition-colors duration-300 ${darkMode ? 'bg-gray-900 border-gray-700 text-gray-100 placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'}`}
-                    rows="3"
+                  <img
+                    src={preview}
+                    alt="Preview"
+                    className="w-full h-48 object-cover rounded-lg"
                   />
-                  <div className={`absolute bottom-3 right-3 text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                    {content.length}/500
-                  </div>
-                </div>
-
-                {preview && (
-                  <div className="relative">
-                    <img
-                      src={preview}
-                      alt="Preview"
-                      className="w-full rounded-lg border transition-colors duration-300 ${darkMode ? 'border-gray-700' : 'border-gray-200'}"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setImage(null);
-                        setPreview(null);
-                      }}
-                      className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600"
-                    >
-                      ×
-                    </button>
-                  </div>
-                )}
-
-                <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
-                  <label className={`flex items-center px-4 py-2 rounded-lg cursor-pointer transition-colors duration-300 ${darkMode ? 'bg-gray-700 hover:bg-gray-600 text-gray-200' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'}`}>
-                    <FiImage className={`mr-2 ${darkMode ? 'text-purple-300' : 'text-purple-600'}`} />
-                    <span>Add Image</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => setImage(e.target.files[0])}
-                      className="hidden"
-                    />
-                  </label>
-
                   <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className={`flex items-center px-6 py-2 rounded-lg font-medium transition-colors duration-300 ${
-                      isSubmitting
-                        ? 'bg-purple-600/50 cursor-not-allowed'
-                        : darkMode
-                          ? 'bg-purple-600 hover:bg-purple-700 text-white shadow-lg shadow-purple-500/20'
-                          : 'bg-purple-600 hover:bg-purple-700 text-white shadow-lg shadow-purple-500/20'
-                    }`}
+                    onClick={() => {
+                      setImage(null);
+                      setPreview(null);
+                    }}
+                    className="absolute top-2 right-2 p-1 rounded-full bg-red-500 text-white hover:bg-red-600"
                   >
-                    {isSubmitting ? (
-                      <span className="flex items-center">
-                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        Posting...
-                      </span>
-                    ) : (
-                      <>
-                        <FiUpload className="mr-2" />
-                        Post
-                      </>
-                    )}
+                    <FiX className="w-5 h-5" />
                   </button>
                 </div>
-              </form>
+              )}
             </div>
           </div>
         </div>

@@ -3,7 +3,7 @@ import { jwtDecode } from "jwt-decode";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import gsap from "gsap";
-import { FaHeart, FaComment, FaEllipsisV, FaMapMarkerAlt, FaPhone, FaUserEdit, FaSun, FaMoon } from "react-icons/fa";
+import { FaHeart, FaComment, FaEllipsisV, FaMapMarkerAlt, FaPhone, FaUserEdit, FaSun, FaMoon, FaImage } from "react-icons/fa";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { DarkModeContext } from "../assets/darkmode";
 
@@ -31,6 +31,9 @@ const Profile = () => {
   const [decoded, setDecoded] = useState(null);
   const fileInputRef = useRef(null);
   const sectionRefs = useRef([]);
+  const [showCreatePostModal, setShowCreatePostModal] = useState(false);
+  const [newPost, setNewPost] = useState({ content: '', image: null });
+  const postImageRef = useRef(null);
 
   // Add section to refs array for animations
   const addToRefs = (el) => {
@@ -162,6 +165,30 @@ const Profile = () => {
       month: 'short',
       day: 'numeric'
     });
+  };
+
+  // Add this new function to handle post creation
+  const handleCreatePost = async () => {
+    try {
+      const formData = new FormData();
+      formData.append('content', newPost.content);
+      if (newPost.image) {
+        formData.append('image', newPost.image);
+      }
+
+      const response = await axios.post('http://localhost:5000/api/posts', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+
+      setState(prev => ({
+        ...prev,
+        userPosts: [response.data, ...prev.userPosts]
+      }));
+      setShowCreatePostModal(false);
+      setNewPost({ content: '', image: null });
+    } catch (error) {
+      console.error('Error creating post:', error);
+    }
   };
 
   if (state.error) return <div className="text-red-500 text-center py-10 text-lg">{state.error}</div>;
@@ -475,7 +502,10 @@ const Profile = () => {
                       No posts yet. Start sharing your journeys!
                     </p>
                     {decoded && state.userData._id === decoded.id && (
-                      <button className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">
+                      <button 
+                        onClick={() => setShowCreatePostModal(true)}
+                        className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+                      >
                         Create Your First Post
                       </button>
                     )}
@@ -554,6 +584,106 @@ const Profile = () => {
               >
                 Delete
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Create Post Modal */}
+      {showCreatePostModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className={`rounded-xl shadow-lg max-w-2xl w-full p-6 ${
+            darkMode ? 'bg-gray-800' : 'bg-white'
+          }`}>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className={`text-xl font-semibold ${
+                darkMode ? 'text-white' : 'text-gray-800'
+              }`}>
+                Create New Post
+              </h2>
+              <button
+                onClick={() => setShowCreatePostModal(false)}
+                className={`p-2 rounded-full ${
+                  darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'
+                }`}
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="space-y-4">
+              {/* User info section */}
+              <div className="flex items-center space-x-3 mb-4">
+                <img
+                  src={`http://localhost:5000/${state.userData.image}`}
+                  alt="Profile"
+                  className="w-10 h-10 rounded-full object-cover border-2 border-gray-200 dark:border-gray-700"
+                />
+                <div>
+                  <h3 className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                    {state.userData.fullname}
+                  </h3>
+                  <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                    @{state.userData.username}
+                  </p>
+                </div>
+              </div>
+              <textarea
+                value={newPost.content}
+                onChange={(e) => setNewPost(prev => ({ ...prev, content: e.target.value }))}
+                placeholder="What's on your mind?"
+                className={`w-full p-4 rounded-lg resize-none ${
+                  darkMode ? 'bg-gray-700 text-white border-gray-600' : 'bg-white border-gray-300'
+                } border focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+                rows="4"
+              />
+              <div className="flex items-center justify-between">
+                <button
+                  onClick={() => postImageRef.current.click()}
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg ${
+                    darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'
+                  }`}
+                >
+                  <FaImage className="w-5 h-5" />
+                  <span>Add Image</span>
+                </button>
+                <input
+                  type="file"
+                  ref={postImageRef}
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => setNewPost(prev => ({ ...prev, image: e.target.files[0] }))}
+                />
+                <button
+                  onClick={handleCreatePost}
+                  disabled={!newPost.content.trim()}
+                  className={`px-6 py-2 rounded-lg ${
+                    newPost.content.trim()
+                      ? 'bg-blue-500 hover:bg-blue-600 text-white'
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  }`}
+                >
+                  Post
+                </button>
+              </div>
+              {newPost.image && (
+                <div className="relative">
+                  <img
+                    src={URL.createObjectURL(newPost.image)}
+                    alt="Preview"
+                    className="w-full h-48 object-cover rounded-lg"
+                  />
+                  <button
+                    onClick={() => setNewPost(prev => ({ ...prev, image: null }))}
+                    className="absolute top-2 right-2 p-1 rounded-full bg-red-500 text-white hover:bg-red-600"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
