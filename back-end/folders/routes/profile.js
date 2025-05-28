@@ -62,5 +62,51 @@ app.put('/editPhoto/:id', upload.single("image"), async (req, res) => {
       res.status(400).json({ message: `Couldn't update user ${err}` });
     }
   });
+
+app.put('/updateInfo/:id', async (req, res) => {
+    const { fullname, username, email } = req.body;
+    try {
+        // Check if username or email already exists for another user
+        const existingUsername = await user.findOne({ username, _id: { $ne: req.params.id } });
+        if (existingUsername) {
+            return res.status(400).json({ message: 'Username already exists' });
+        }
+        const existingEmail = await user.findOne({ email, _id: { $ne: req.params.id } });
+        if (existingEmail) {
+            return res.status(400).json({ message: 'Email already exists' });
+        }
+        const updatedUser = await user.findByIdAndUpdate(
+            req.params.id,
+            { fullname, username, email },
+            { new: true }
+        );
+        res.status(200).json({ message: 'User info updated', user: updatedUser });
+    } catch (err) {
+        console.log("Couldn't update user info", err);
+        res.status(400).json({ message: "Couldn't update user info" });
+    }
+});
+
+app.put('/updatePassword/:id', async (req, res) => {
+    const { currentPassword, newPassword, confirmPassword } = req.body;
+    try {
+        const foundUser = await user.findById(req.params.id);
+        if (!foundUser) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        if (foundUser.password !== currentPassword) {
+            return res.status(400).json({ message: 'Current password is incorrect' });
+        }
+        if (newPassword !== confirmPassword) {
+            return res.status(400).json({ message: 'New passwords do not match' });
+        }
+        foundUser.password = newPassword;
+        await foundUser.save();
+        res.status(200).json({ message: 'Password updated successfully' });
+    } catch (err) {
+        console.log("Couldn't update password", err);
+        res.status(400).json({ message: "Couldn't update password" });
+    }
+});
   
 module.exports = app

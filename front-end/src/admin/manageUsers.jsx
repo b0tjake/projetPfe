@@ -110,7 +110,7 @@ console.log(findUser)
 
 
   return (
-<div className="flex min-h-screen bg-gray-50">
+<div className="flex min-h-screen bg-gray-50 text-black">
   <aside className="hidden md:block w-64 bg-white border-r shadow-md p-4">
     <AdminSide />
   </aside>

@@ -14,7 +14,7 @@ const Navbar = ({ setLoading }) => {
 
   const logOut = async () => {
     try {
-      await axios.post('http://localhost:5000/api/auth/logout');
+      // await axios.post('http://localhost:5000/api/auth/logout');
       localStorage.removeItem("token");
       setLoading(true);
       setTimeout(() => {

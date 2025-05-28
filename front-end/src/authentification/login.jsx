@@ -90,7 +90,7 @@ export default function Login({setLoading}) {
   }, []);
 
   return (
-    <div className="flex justify-center items-center h-screen bg-gray-100">
+    <div className="flex justify-center text-black items-center h-screen bg-gray-100">
       <div className="flex w-full h-full card items-center md:items-stretch max-w-4xl p-2 md:h-3/4 bg-white rounded-2xl shadow-lg">
         {/* Left Side*/}
         <div className="hidden md:block w-1/2">

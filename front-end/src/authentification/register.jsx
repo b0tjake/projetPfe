@@ -87,7 +87,7 @@ try {
     })
   }, []);
   return (
-    <div className="flex justify-center items-center h-screen bg-gray-100">
+    <div className="flex justify-center text-black items-center h-screen bg-gray-100">
       <div className="flex w-full card items-center md:items-stretch max-w-4xl p-2 pt-6 md:pt-2 h-full md:h-[90%] bg-white rounded-2xl shadow-lg">
         {/* Left Side */}
 

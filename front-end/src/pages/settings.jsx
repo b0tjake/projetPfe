@@ -4,6 +4,7 @@ import { FiUser, FiLock, FiBell, FiShield, FiHelpCircle, FiGlobe, FiMoon, FiSun 
 import { motion } from 'framer-motion';
 import axios from 'axios';
 import Sidebar from '../components/sideBar';
+import { jwtDecode } from "jwt-decode";
 
 export default function Settings() {
   const { darkMode, toggleDarkMode } = useContext(DarkModeContext);
@@ -25,6 +26,15 @@ export default function Settings() {
     },
     language: 'en'
   });
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  let userId = null;
+  try {
+    const token = localStorage.getItem("token");
+    if (token) {
+      userId = jwtDecode(token).id;
+    }
+  } catch (e) {}
 
   useEffect(() => {
     fetchUserData();
@@ -33,17 +43,16 @@ export default function Settings() {
   const fetchUserData = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:5000/api/users/profile', {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+      const userId = jwtDecode(token).id;
+      const response = await axios.get(`http://localhost:5000/api/profile/${userId}`, {
+        headers: { Authorization: `Bearer ${token}` }
       });
-      setUser(response.data);
+      setUser(response.data.user);
       setFormData(prev => ({
         ...prev,
-        fullname: response.data.fullname,
-        username: response.data.username,
-        email: response.data.email
+        fullname: response.data.user.fullname,
+        username: response.data.user.username,
+        email: response.data.user.email
       }));
     } catch (error) {
       console.error('Error fetching user data:', error);
@@ -70,20 +79,63 @@ export default function Settings() {
     }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleProfileSubmit = async (e) => {
     e.preventDefault();
+    setSuccessMessage("");
+    setErrorMessage("");
     try {
-      const token = localStorage.getItem('token');
-      await axios.put('http://localhost:5000/api/users/update', formData, {
-        headers: {
-          Authorization: `Bearer ${token}`
+      const token = localStorage.getItem("token");
+      await axios.put(
+        `http://localhost:5000/api/profile/updateInfo/${userId}`,
+        {
+          fullname: formData.fullname,
+          username: formData.username,
+          email: formData.email,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
         }
-      });
-      // Show success message
-      alert('Settings updated successfully!');
+      );
+      setSuccessMessage("Profile updated successfully!");
     } catch (error) {
-      console.error('Error updating settings:', error);
-      alert('Error updating settings. Please try again.');
+      setErrorMessage(
+        error.response?.data?.message || "Error updating profile. Please try again."
+      );
+    }
+  };
+
+  const handlePasswordSubmit = async (e) => {
+    e.preventDefault();
+    setSuccessMessage("");
+    setErrorMessage("");
+    if (formData.newPassword !== formData.confirmPassword) {
+      setErrorMessage("New passwords do not match.");
+      return;
+    }
+    try {
+      const token = localStorage.getItem("token");
+      await axios.put(
+        `http://localhost:5000/api/profile/updatePassword/${userId}`,
+        {
+          currentPassword: formData.currentPassword,
+          newPassword: formData.newPassword,
+          confirmPassword: formData.confirmPassword,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setSuccessMessage("Password updated successfully!");
+      setFormData((prev) => ({
+        ...prev,
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      }));
+    } catch (error) {
+      setErrorMessage(
+        error.response?.data?.message || "Error updating password. Please try again."
+      );
     }
   };
 
@@ -160,7 +212,7 @@ export default function Settings() {
                     >
                       {/* Profile Settings */}
                       {activeTab === 'profile' && (
-                        <div className="space-y-4 sm:space-y-6">
+                        <form onSubmit={handleProfileSubmit} className="space-y-4 sm:space-y-6">
                           <div className="flex flex-col space-y-4">
                             <div>
                               <label className={`block mb-2 ${
@@ -217,20 +269,22 @@ export default function Settings() {
                               />
                             </div>
                           </div>
+                          {successMessage && <div className="text-green-600">{successMessage}</div>}
+                          {errorMessage && <div className="text-red-600">{errorMessage}</div>}
                           <div className="flex justify-end">
                             <button
-                              onClick={handleSubmit}
+                              type="submit"
                               className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
                             >
                               Save Changes
                             </button>
                           </div>
-                        </div>
+                        </form>
                       )}
 
                       {/* Security Settings */}
                       {activeTab === 'security' && (
-                        <form onSubmit={handleSubmit} className="space-y-4">
+                        <form onSubmit={handlePasswordSubmit} className="space-y-4">
                           <div>
                             <label className={`block mb-2 ${
                               darkMode ? 'text-gray-300' : 'text-gray-700'
@@ -285,6 +339,8 @@ export default function Settings() {
                               } border focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
                             />
                           </div>
+                          {successMessage && <div className="text-green-600">{successMessage}</div>}
+                          {errorMessage && <div className="text-red-600">{errorMessage}</div>}
                           <button
                             type="submit"
                             className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
