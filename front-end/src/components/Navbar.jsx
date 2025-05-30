@@ -109,7 +109,7 @@ const Navbar = ({ setLoading }) => {
 
           {/* Mobile menu button */}
           <div className="-mr-2 flex items-center sm:hidden">
-            <button onClick={() => setShowMobileMenu(!showMobileMenu)} className={`inline-flex items-center justify-center p-2 rounded-md ${textColor} hover:bg-gray-100 focus:outline-none`}>
+            <button onClick={() => setShowMobileMenu(!showMobileMenu)} className={`inline-flex items-center justify-center p-2 rounded-md ${darkMode ? 'text-gray-100 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'} focus:outline-none`}>
               <span className="sr-only">Open main menu</span>
               {showMobileMenu ? (
                 <svg className="block h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -129,41 +129,41 @@ const Navbar = ({ setLoading }) => {
       {showMobileMenu && (
         <div className={`sm:hidden absolute z-10 ${bgColor} w-full flex justify-center`}>
           <div className="pt-2 pb-3 space-y-1">
-            <Link to="/" className={`${textColor} hover:bg-gray-100 block pl-3 pr-4 py-2 text-base font-medium flex items-center`}>
-              <FiHome className="h-5 w-5 mr-2" />
+            <Link to="/" className={`${textColor} ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} block pl-3 pr-4 py-2 text-base font-medium flex items-center`}>
+              <FiHome className={`h-5 w-5 mr-2 ${darkMode ? 'text-gray-100' : 'text-gray-700'}`} />
               Home
             </Link>
-            <Link to="/messages" className={`${textColor} hover:bg-gray-100 block pl-3 pr-4 py-2 text-base font-medium flex items-center`}>
-              <FiMessageSquare className="h-5 w-5 mr-2" />
+            <Link to="/messages" className={`${textColor} ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} block pl-3 pr-4 py-2 text-base font-medium flex items-center`}>
+              <FiMessageSquare className={`h-5 w-5 mr-2 ${darkMode ? 'text-gray-100' : 'text-gray-700'}`} />
               Messages
             </Link>
-            <Link to="/notifications" className={`${textColor} hover:bg-gray-100 block pl-3 pr-4 py-2 text-base font-medium flex items-center`}>
-              <FiBell className="h-5 w-5 mr-2" />
+            <Link to="/notifications" className={`${textColor} ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} block pl-3 pr-4 py-2 text-base font-medium flex items-center`}>
+              <FiBell className={`h-5 w-5 mr-2 ${darkMode ? 'text-gray-100' : 'text-gray-700'}`} />
               Notifications
             </Link>
-            <Link to="/suggestions" className={`${textColor} hover:bg-gray-100 block pl-3 pr-4 py-2 text-base font-medium flex items-center`}>
-              <FiHelpCircle className="h-5 w-5 mr-2" />
+            <Link to="/suggestions" className={`${textColor} ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} block pl-3 pr-4 py-2 text-base font-medium flex items-center`}>
+              <FiHelpCircle className={`h-5 w-5 mr-2 ${darkMode ? 'text-gray-100' : 'text-gray-700'}`} />
               Suggestions
             </Link>
             {token ? (
               <>
-                <Link to={`/profile/${userData?.id}`} className={`${textColor} hover:bg-gray-100 block pl-3 pr-4 py-2 text-base font-medium flex items-center`}>
-                  <FiUser className="h-5 w-5 mr-2" />
+                <Link to={`/profile/${userData?.id}`} className={`${textColor} ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} block pl-3 pr-4 py-2 text-base font-medium flex items-center`}>
+                  <FiUser className={`h-5 w-5 mr-2 ${darkMode ? 'text-gray-100' : 'text-gray-700'}`} />
                   Profile
                 </Link>
-                <Link to="/settings" className={`${textColor} hover:bg-gray-100 block pl-3 pr-4 py-2 text-base font-medium flex items-center`}>
-                  <FiSettings className="h-5 w-5 mr-2" />
+                <Link to="/settings" className={`${textColor} ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} block pl-3 pr-4 py-2 text-base font-medium flex items-center`}>
+                  <FiSettings className={`h-5 w-5 mr-2 ${darkMode ? 'text-gray-100' : 'text-gray-700'}`} />
                   Settings
                 </Link>
-                <button onClick={logOut} className={`${textColor} hover:bg-gray-100 block pl-3 pr-4 py-2 text-base font-medium w-full text-left flex items-center`}>
-                  <FiLogOut className="h-5 w-5 mr-2" />
+                <button onClick={logOut} className={`${textColor} ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} block pl-3 pr-4 py-2 text-base font-medium w-full text-left flex items-center`}>
+                  <FiLogOut className={`h-5 w-5 mr-2 ${darkMode ? 'text-gray-100' : 'text-gray-700'}`} />
                   Logout
                 </button>
               </>
             ) : (
               <>
-                <Link to="/login" className={`${textColor} hover:bg-gray-100 block pl-3 pr-4 py-2 text-base font-medium`}>Login</Link>
-                <Link to="/register" className={`${textColor} hover:bg-gray-100 block pl-3 pr-4 py-2 text-base font-medium`}>Register</Link>
+                <Link to="/login" className={`${textColor} ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} block pl-3 pr-4 py-2 text-base font-medium`}>Login</Link>
+                <Link to="/register" className={`${textColor} ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} block pl-3 pr-4 py-2 text-base font-medium`}>Register</Link>
               </>
             )}
           </div>

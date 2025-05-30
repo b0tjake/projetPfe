@@ -48,7 +48,6 @@ const navigate = useNavigate();
 
   useEffect(() => {
     if (!token && !isAuthPage) {
-      // إعادة توجيه المستخدم إلى صفحة تسجيل الدخول إذا ما كانش عنده توكن
       window.location.href = "/login";
     }
   }, [token, isAuthPage]);

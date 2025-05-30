@@ -428,21 +428,21 @@ export default function Home() {
               }`}>
                 Create New Post
               </h2>
-              <button
-                onClick={() => setIsCreateModalOpen(false)}
+                <button
+                  onClick={() => setIsCreateModalOpen(false)}
                 className={`p-2 rounded-full ${
                   darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'
                 }`}
-              >
-                <FiX className="w-6 h-6" />
-              </button>
-            </div>
+                >
+                  <FiX className="w-6 h-6" />
+                </button>
+              </div>
             <div className="space-y-4">
               {/* User info section */}
               <div className="flex items-center space-x-3 mb-4">
-                <img
-                  src={`http://localhost:5000/${user.image}`}
-                  alt="Profile"
+                  <img
+                    src={`http://localhost:5000/${user.image}`}
+                    alt="Profile"
                   className="w-10 h-10 rounded-full object-cover border-2 border-gray-200 dark:border-gray-700"
                 />
                 <div>
@@ -452,11 +452,11 @@ export default function Home() {
                   <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                     @{user.username}
                   </p>
-                </div>
+                  </div>
               </div>
-              <textarea
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
+                  <textarea
+                    value={content}
+                    onChange={(e) => setContent(e.target.value)}
                 placeholder="What's on your mind?"
                 className={`w-full p-4 rounded-lg resize-none ${
                   darkMode ? 'bg-gray-700 text-white border-gray-600' : 'bg-white border-gray-300'
@@ -491,19 +491,19 @@ export default function Home() {
                 >
                   {isSubmitting ? 'Posting...' : 'Post'}
                 </button>
-              </div>
-              {preview && (
-                <div className="relative">
-                  <img
-                    src={preview}
-                    alt="Preview"
+                </div>
+                {preview && (
+                  <div className="relative">
+                    <img
+                      src={preview}
+                      alt="Preview"
                     className="w-full h-48 object-cover rounded-lg"
-                  />
-                  <button
-                    onClick={() => {
-                      setImage(null);
-                      setPreview(null);
-                    }}
+                    />
+                    <button
+                      onClick={() => {
+                        setImage(null);
+                        setPreview(null);
+                      }}
                     className="absolute top-2 right-2 p-1 rounded-full bg-red-500 text-white hover:bg-red-600"
                   >
                     <FiX className="w-5 h-5" />
