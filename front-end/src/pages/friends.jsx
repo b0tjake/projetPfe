@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { DarkModeContext } from '../assets/darkmode';
-import { FiUserPlus, FiUserMinus, FiSearch, FiUserCheck, FiUserX } from 'react-icons/fi';
+import { FiUserPlus, FiUserMinus, FiSearch, FiUserCheck, FiUserX, FiUsers, FiUser, FiSend } from 'react-icons/fi';
 import axios from 'axios';
 import Sidebar from '../components/sideBar';
 import { useNavigate } from 'react-router-dom';
@@ -146,48 +146,59 @@ export default function Friends() {
       <div className="flex flex-col lg:flex-row">
         <Sidebar />
         <div className="flex-1">
-          <div className={`p-4 sm:p-6 ${darkMode ? 'bg-gray-800' : 'bg-white'} min-h-screen`}>
+          <div className={`p-4 sm:p-8 ${darkMode ? 'bg-gray-800' : 'bg-white'} min-h-screen`}>
             {/* Header and Tabs */}
-            <div className="mb-6">
-              <h1 className={`text-2xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                Friends
-              </h1>
-              <div className="flex space-x-4 border-b border-gray-200">
+            <div className="mb-8">
+              <div className="flex items-center space-x-3 mb-6">
+                <FiUsers className={`text-3xl ${darkMode ? 'text-blue-400' : 'text-blue-600'}`} />
+                <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                  Friends
+                </h1>
+              </div>
+              <div className="flex space-x-6 border-b border-gray-200">
                 {[
-                  { id: 'friends', label: 'Friends', count: state.friends.length },
-                  { id: 'received', label: 'Friend Requests', count: state.receivedRequests.length },
-                  { id: 'sent', label: 'Sent Requests', count: state.sentRequests.length }
+                  { id: 'friends', label: 'Friends', count: state.friends.length, icon: FiUsers },
+                  { id: 'received', label: 'Friend Requests', count: state.receivedRequests.length, icon: FiUser },
+                  { id: 'sent', label: 'Sent Requests', count: state.sentRequests.length, icon: FiSend }
                 ].map(tab => (
                   <button
                     key={tab.id}
                     onClick={() => setState(prev => ({ ...prev, activeTab: tab.id }))}
-                    className={`pb-2 px-1 ${
+                    className={`flex items-center space-x-2 pb-3 px-1 transition-all duration-200 ${
                       state.activeTab === tab.id
                         ? `border-b-2 border-blue-500 ${darkMode ? 'text-blue-400' : 'text-blue-600'}`
-                        : `${darkMode ? 'text-gray-400' : 'text-gray-500'}`
+                        : `${darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'}`
                     }`}
                   >
-                    {tab.label} ({tab.count})
+                    <tab.icon className="text-lg" />
+                    <span>{tab.label}</span>
+                    <span className={`px-2 py-0.5 rounded-full text-xs ${
+                      state.activeTab === tab.id
+                        ? darkMode ? 'bg-blue-500/20 text-blue-400' : 'bg-blue-100 text-blue-600'
+                        : darkMode ? 'bg-gray-700 text-gray-400' : 'bg-gray-100 text-gray-600'
+                    }`}>
+                      {tab.count}
+                    </span>
                   </button>
                 ))}
               </div>
             </div>
 
             {/* Search Bar */}
-            <div className="mb-6">
+            <div className="mb-8">
               <div className="relative max-w-md">
                 <input
                   type="text"
-                  placeholder="Search..."
+                  placeholder="Search friends..."
                   value={state.searchQuery}
                   onChange={(e) => setState(prev => ({ ...prev, searchQuery: e.target.value }))}
-                  className={`w-full pl-10 pr-4 py-2 rounded-lg ${
+                  className={`w-full pl-12 pr-4 py-3 rounded-xl ${
                     darkMode
-                      ? 'bg-gray-700 text-white border-gray-600'
-                      : 'bg-white text-gray-900 border-gray-300'
-                  } border focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+                      ? 'bg-gray-700 text-white border-gray-600 placeholder-gray-400'
+                      : 'bg-white text-gray-900 border-gray-300 placeholder-gray-500'
+                  } border focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200`}
                 />
-                <FiSearch className={`absolute left-3 top-1/2 transform -translate-y-1/2 ${
+                <FiSearch className={`absolute left-4 top-1/2 transform -translate-y-1/2 text-xl ${
                   darkMode ? 'text-gray-400' : 'text-gray-500'
                 }`} />
               </div>
@@ -196,110 +207,117 @@ export default function Friends() {
             {/* Content */}
             {state.loading ? (
               <div className="flex justify-center items-center h-64">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
               </div>
             ) : (
-              <div className="max-w-3xl mx-auto space-y-4">
-                {filteredData().map((user) => (
-                  <div
-                    key={user._id}
-                    className={`${darkMode ? 'bg-gray-700' : 'bg-white'} rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden`}
-                  >
-                    <div className="p-6">
-                      <div className="flex items-center space-x-4">
-                        <img
-                          src={`http://localhost:5000/${user.image}`}
-                          alt={user.fullname}
-                          className="w-16 h-16 rounded-full object-cover border-2 border-blue-500"
-                        />
-                        <div className="flex-1">
-                          <h3 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                            {user.fullname}
-                          </h3>
-                          <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                            @{user.username}
-                          </p>
-                          {user.profession && (
-                            <p className={`text-sm mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                              {user.profession}
+              <div className="max-w-2xl px-4 sm:px-6">
+                {/* mx-auto */}
+                {filteredData().length === 0 ? (
+                  <div className={`text-center py-12 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                    <FiUsers className="mx-auto text-5xl mb-4 opacity-50" />
+                    <p className="text-lg">No {state.activeTab} found</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {filteredData().map((user) => (
+                      <div
+                        key={user._id}
+                        className={`flex items-center justify-between p-3 ${
+                          darkMode ? 'hover:bg-gray-700/50' : 'hover:bg-gray-50'
+                        } rounded-lg transition-all duration-200`}
+                      >
+                        <div 
+                          className="flex items-center space-x-3 flex-1 cursor-pointer"
+                          onClick={() => navigate(`/profile/${user._id}`)}
+                        >
+                          <div className="relative flex-shrink-0">
+                            <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-full overflow-hidden">
+                              <img
+                                src={`http://localhost:5000/${user.image}`}
+                                alt={user.fullname}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <h3 className={`text-sm sm:text-base font-semibold ${darkMode ? 'text-white' : 'text-gray-900'} truncate`}>
+                              {user.fullname}
+                            </h3>
+                            <p className={`text-xs sm:text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'} truncate`}>
+                              @{user.username}
                             </p>
+                          </div>
+                        </div>
+                        
+                        {/* Action Buttons */}
+                        <div className="flex items-center space-x-1 sm:space-x-2 ml-2">
+                          {state.activeTab === 'friends' && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleUnfriend(user._id);
+                              }}
+                              className={`px-2 sm:px-4 py-1 sm:py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${
+                                darkMode
+                                  ? 'text-red-400 hover:bg-red-500/10'
+                                  : 'text-red-500 hover:bg-red-50'
+                              }`}
+                            >
+                              Unfriend
+                            </button>
+                          )}
+                          
+                          {state.activeTab === 'received' && (
+                            <div className="flex space-x-1 sm:space-x-2">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeclineRequest(user._id);
+                                }}
+                                className={`px-2 sm:px-4 py-1 sm:py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${
+                                  darkMode
+                                    ? 'text-red-400 hover:bg-red-500/10'
+                                    : 'text-red-500 hover:bg-red-50'
+                                }`}
+                              >
+                                Decline
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleAcceptRequest(user._id);
+                                }}
+                                className={`px-2 sm:px-4 py-1 sm:py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${
+                                  darkMode
+                                    ? 'text-blue-400 hover:bg-blue-500/10'
+                                    : 'text-blue-500 hover:bg-blue-50'
+                                }`}
+                              >
+                                Accept
+                              </button>
+                            </div>
+                          )}
+                          
+                          {state.activeTab === 'sent' && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleCancelRequest(user._id);
+                              }}
+                              className={`px-2 sm:px-4 py-1 sm:py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${
+                                darkMode
+                                  ? 'text-gray-400 hover:bg-gray-600'
+                                  : 'text-gray-500 hover:bg-gray-100'
+                              }`}
+                            >
+                              Cancel
+                            </button>
                           )}
                         </div>
                       </div>
-                      
-                      {/* Action Buttons */}
-                      <div className="mt-4 flex justify-end space-x-3">
-                        {state.activeTab === 'friends' && (
-                          <button
-                            onClick={() => handleUnfriend(user._id)}
-                            className={`px-4 py-2 rounded-lg text-sm font-medium ${
-                              darkMode
-                                ? 'bg-red-500/10 text-red-400 hover:bg-red-500/20'
-                                : 'bg-red-50 text-red-500 hover:bg-red-100'
-                            } transition-colors duration-200`}
-                          >
-                            Unfriend
-                          </button>
-                        )}
-                        
-                        {state.activeTab === 'received' && (
-                          <>
-                            <button
-                              onClick={() => handleDeclineRequest(user._id)}
-                              className={`px-4 py-2 rounded-lg text-sm font-medium ${
-                                darkMode
-                                  ? 'bg-red-500/10 text-red-400 hover:bg-red-500/20'
-                                  : 'bg-red-50 text-red-500 hover:bg-red-100'
-                              } transition-colors duration-200`}
-                            >
-                              Decline
-                            </button>
-                            <button
-                              onClick={() => handleAcceptRequest(user._id)}
-                              className={`px-4 py-2 rounded-lg text-sm font-medium ${
-                                darkMode
-                                  ? 'bg-green-500/10 text-green-400 hover:bg-green-500/20'
-                                  : 'bg-green-50 text-green-500 hover:bg-green-100'
-                              } transition-colors duration-200`}
-                            >
-                              Accept
-                            </button>
-                          </>
-                        )}
-                        
-                        {state.activeTab === 'sent' && (
-                          <button
-                            onClick={() => handleCancelRequest(user._id)}
-                            className={`px-4 py-2 rounded-lg text-sm font-medium ${
-                              darkMode
-                                ? 'bg-red-500/10 text-red-400 hover:bg-red-500/20'
-                                : 'bg-red-50 text-red-500 hover:bg-red-100'
-                            } transition-colors duration-200`}
-                          >
-                            Cancel Request
-                          </button>
-                        )}
-                      </div>
-                    </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            )}
-
-            {!state.loading && filteredData().length === 0 && (
-              <div className={`text-center py-12 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                <div className="max-w-sm mx-auto">
-                  <p className="text-lg font-medium mb-2">
-                    {state.activeTab === 'friends' && "No friends found"}
-                    {state.activeTab === 'received' && "No friend requests"}
-                    {state.activeTab === 'sent' && "No sent requests"}
-                  </p>
-                  <p className="text-sm opacity-75">
-                    {state.activeTab === 'friends' && "Start connecting with other users to build your network"}
-                    {state.activeTab === 'received' && "You don't have any pending friend requests"}
-                    {state.activeTab === 'sent' && "You haven't sent any friend requests yet"}
-                  </p>
-                </div>
+                )}
               </div>
             )}
           </div>

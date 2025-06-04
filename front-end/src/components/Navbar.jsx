@@ -11,7 +11,11 @@ const Navbar = ({ setLoading }) => {
   const [userData, setUserData] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [showSearchResults, setShowSearchResults] = useState(false);
   const notificationRef = useRef(null);
+  const searchRef = useRef(null);
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
   const { darkMode, toggleDarkMode } = useContext(DarkModeContext);
@@ -125,6 +129,32 @@ const Navbar = ({ setLoading }) => {
   const hoverColor = darkMode ? "hover:text-white" : "hover:text-black";
   const inputBg = darkMode ? "bg-gray-800 border-gray-600 placeholder-gray-400" : "bg-white border-gray-300 placeholder-gray-500";
 
+  const handleSearch = async (e) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+    
+    if (!query.trim()) {
+      setSearchResults([]);
+      setShowSearchResults(false);
+      return;
+    }
+
+    try {
+      const response = await axios.get(`http://localhost:5000/api/profile/search?query=${encodeURIComponent(query)}`);
+      setSearchResults(response.data.users);
+      setShowSearchResults(true);
+    } catch (error) {
+      console.error('Error searching users:', error);
+      setSearchResults([]);
+    }
+  };
+
+  const handleUserClick = (userId) => {
+    setShowSearchResults(false);
+    setSearchQuery('');
+    navigate(`/profile/${userId}`);
+  };
+
   return (
     <nav className={`${bgColor} shadow-md w-full fixed z-10`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -148,14 +178,65 @@ const Navbar = ({ setLoading }) => {
 
           {/* Search bar */}
           <div className="flex-1 flex items-center justify-center px-2 lg:ml-6 lg:justify-end">
-            <div className="max-w-lg w-full lg:max-w-xs">
-              <label htmlFor="search" className="sr-only">Search</label>
+            <div className="max-w-lg w-full lg:max-w-xs" ref={searchRef}>
+              <label htmlFor="search" className="sr-only">Search users</label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <FiSearch className="h-5 w-5 text-gray-400" />
                 </div>
-                <input id="search" name="search" type="search" placeholder="Search" className={`block w-full pl-10 pr-3 py-2 rounded-md leading-5 ${inputBg} focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm`} />
+                <input
+                  id="search"
+                  name="search"
+                  type="search"
+                  placeholder="Search users..."
+                  value={searchQuery}
+                  onChange={handleSearch}
+                  className={`block w-full pl-10 pr-3 py-2 rounded-md leading-5 ${inputBg} focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
+                />
               </div>
+
+              {/* Search Results */}
+              {showSearchResults && searchResults.length > 0 && (
+                <div className={`absolute mt-2 w-full rounded-md shadow-lg ${
+                  darkMode ? 'bg-gray-800' : 'bg-white'
+                } ring-1 ring-black ring-opacity-5 z-50 max-h-96 overflow-y-auto`}>
+                  <div className="py-2">
+                    {searchResults.map((user) => (
+                      <div
+                        key={user._id}
+                        onClick={() => handleUserClick(user._id)}
+                        className={`px-4 py-3 hover:${darkMode ? 'bg-gray-700' : 'bg-gray-50'} cursor-pointer`}
+                      >
+                        <div className="flex items-center space-x-3">
+                          <img
+                            src={`http://localhost:5000/${user.image}`}
+                            alt={user.fullname}
+                            className="h-10 w-10 rounded-full object-cover"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <p className={`text-sm font-medium ${textColor} truncate`}>
+                              {user.fullname}
+                            </p>
+                            <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'} truncate`}>
+                              @{user.username}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {showSearchResults && searchQuery && searchResults.length === 0 && (
+                <div className={`absolute mt-2 w-full rounded-md shadow-lg ${
+                  darkMode ? 'bg-gray-800' : 'bg-white'
+                } ring-1 ring-black ring-opacity-5 z-50`}>
+                  <div className="px-4 py-3 text-sm text-gray-500">
+                    No users found
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

@@ -27,7 +27,7 @@ export default function Sidebar() {
     { id: "home", icon: <FiHome />, label: "Home", path: "/" },
     { id: "friends", icon: <FiUsers />, label: "Friends", path: "/friends" },
     { id: "messages", icon: <FiMessageSquare />, label: "Messages", path: "/messages" },
-    { id: "notifications", icon: <FiBell />, label: "Notifications", path: "/notifications" },
+    // { id: "notifications", icon: <FiBell />, label: "Notifications", path: "/notifications" },
     { id: "save", icon: <FiBookmark />, label: "Save", path: "/saved" },
     { id: "settings", icon: <FiSettings />, label: "Settings", path: "/settings" },
     { path: '/addpost', icon: <FiPlusCircle />, label: 'Add Post' },

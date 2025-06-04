@@ -108,5 +108,27 @@ app.put('/updatePassword/:id', async (req, res) => {
         res.status(400).json({ message: "Couldn't update password" });
     }
 });
-  
+
+// Add search endpoint
+app.get('/search', async (req, res) => {
+    try {
+        const { query } = req.query;
+        if (!query) {
+            return res.status(400).json({ message: "Search query is required" });
+        }
+
+        const users = await user.find({
+            $or: [
+                { fullname: { $regex: query, $options: 'i' } },
+                { username: { $regex: query, $options: 'i' } }
+            ]
+        }).select("-password").limit(10);
+
+        res.status(200).json({ users });
+    } catch (err) {
+        console.log("Error searching users:", err);
+        res.status(500).json({ message: "Error searching users" });
+    }
+});
+
 module.exports = app

@@ -23,6 +23,21 @@ import Notifications from "./pages/notifications";
 import Friends from "./pages/friends";
 import SavedPosts from "./pages/savedPosts";
 import Settings from "./pages/settings";
+import Features from "./pages/Features";
+import Integrations from "./pages/Integrations";
+import Pricing from "./pages/Pricing";
+import Changelog from "./pages/Changelog";
+import Documentation from "./pages/Documentation";
+import Tutorials from "./pages/Tutorials";
+import Blog from "./pages/Blog";
+import Support from "./pages/Support";
+import Careers from "./pages/Careers";
+import Press from "./pages/Press";
+import Contact from "./pages/Contact";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
+import Security from "./pages/Security";
+import GDPR from "./pages/GDPR";
 
 
 function AppContent({ setLoading, loading }) {
@@ -75,7 +90,25 @@ const navigate = useNavigate();
           <Route path="/friends" element={<Friends />} />
           <Route path="/saved" element={<SavedPosts />} />
           <Route path="/settings" element={<Settings />} />
-          {/* <Route path="/adminDash" element={<AdminDash/>} /> */}
+          
+          {/* Footer Pages */}
+          <Route path="/features" element={<Features />} />
+          <Route path="/integrations" element={<Integrations />} />
+          <Route path="/pricing" element={<Pricing />} />
+          <Route path="/changelog" element={<Changelog />} />
+          <Route path="/documentation" element={<Documentation />} />
+          <Route path="/tutorials" element={<Tutorials />} />
+          <Route path="/blog" element={<Blog />} />
+          <Route path="/support" element={<Support />} />
+          <Route path="/careers" element={<Careers />} />
+          <Route path="/press" element={<Press />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/security" element={<Security />} />
+          <Route path="/gdpr" element={<GDPR />} />
+
+          {/* Admin Routes */}
           {user?.role === "admin" ? 
           <>
           <Route path="/adminDash" element={<AdminDash/>} />
@@ -96,7 +129,7 @@ const navigate = useNavigate();
       )}
       </div>
 
-      { <Footer />}
+      {!isAuthPage && <Footer />}
     </>
   );
 }
