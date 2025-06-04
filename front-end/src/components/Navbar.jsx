@@ -1,16 +1,110 @@
 import { Link, useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useRef } from "react";
 import { DarkModeContext } from "../assets/darkmode";
-import { FiSun, FiMoon, FiHome, FiPlusSquare, FiHelpCircle, FiSearch, FiLogOut, FiUser, FiSettings, FiMessageSquare, FiBell } from "react-icons/fi";
+import { FiSun, FiMoon, FiHome, FiPlusSquare, FiHelpCircle, FiSearch, FiLogOut, FiUser, FiSettings, FiMessageSquare, FiBell, FiUserPlus, FiHeart, FiMessageCircle } from "react-icons/fi";
 import axios from 'axios';
 
 const Navbar = ({ setLoading }) => {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
   const [userData, setUserData] = useState(null);
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const notificationRef = useRef(null);
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
   const { darkMode, toggleDarkMode } = useContext(DarkModeContext);
+
+  useEffect(() => {
+    // Close notifications when clicking outside
+    const handleClickOutside = (event) => {
+      if (notificationRef.current && !notificationRef.current.contains(event.target)) {
+        setShowNotifications(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    if (token) {
+      const decoded = jwtDecode(token);
+      setUserData(decoded);
+      fetchNotifications(decoded.id);
+    }
+  }, [token]);
+
+  const fetchNotifications = async (userId) => {
+    try {
+      const response = await axios.get(`http://localhost:5000/api/profile/profile/${userId}`);
+      const user = response.data.user;
+      
+      // Get friend requests
+      const friendRequests = await Promise.all(
+        user.friendRequestsReceived.map(async (senderId) => {
+          const senderResponse = await axios.get(`http://localhost:5000/api/profile/profile/${senderId}`);
+          return {
+            id: Date.now() + Math.random(),
+            type: 'friend_request',
+            sender: senderResponse.data.user,
+            timestamp: new Date(),
+            read: false
+          };
+        })
+      );
+
+      // Combine all notifications and sort by timestamp
+      const allNotifications = [
+        ...friendRequests,
+        // Add other types of notifications here when implemented
+      ].sort((a, b) => b.timestamp - a.timestamp);
+
+      setNotifications(allNotifications);
+      setUnreadCount(allNotifications.filter(n => !n.read).length);
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+    }
+  };
+
+  const markAsRead = (notificationId) => {
+    setNotifications(prev => 
+      prev.map(notification => 
+        notification.id === notificationId 
+          ? { ...notification, read: true }
+          : notification
+      )
+    );
+    setUnreadCount(prev => Math.max(0, prev - 1));
+  };
+
+  const handleNotificationClick = (notification) => {
+    markAsRead(notification.id);
+    setShowNotifications(false);
+    
+    // Handle different notification types
+    switch (notification.type) {
+      case 'friend_request':
+        navigate(`/profile/${notification.sender._id}`);
+        break;
+      // Add other cases when implementing more notification types
+      default:
+        break;
+    }
+  };
+
+  const formatTimeAgo = (date) => {
+    const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+    if (seconds < 60) return 'just now';
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    if (days < 7) return `${days}d ago`;
+    return new Date(date).toLocaleDateString();
+  };
 
   const logOut = async () => {
     try {
@@ -25,13 +119,6 @@ const Navbar = ({ setLoading }) => {
       console.error('Error logging out:', error);
     }
   };
-
-  useEffect(() => {
-    if (token) {
-      const decoded = jwtDecode(token);
-      setUserData(decoded);
-    }
-  }, [token]);
 
   const bgColor = darkMode ? "bg-gray-900" : "bg-white";
   const textColor = darkMode ? "text-gray-100" : "text-gray-700";
@@ -56,10 +143,6 @@ const Navbar = ({ setLoading }) => {
                 <FiHelpCircle className="h-5 w-5 mr-1" />
                 Suggestions
               </Link>
-              <Link to="/notifications" className={`${textColor} ${hoverColor} px-3 py-2 rounded-md text-sm font-medium flex items-center`}>
-                <FiBell className="h-5 w-5 mr-1" />
-                Notifications
-              </Link>
             </div>
           </div>
 
@@ -78,6 +161,78 @@ const Navbar = ({ setLoading }) => {
 
           {/* Right section */}
           <div className="hidden sm:ml-6 sm:flex sm:items-center">
+            {/* Notifications */}
+            {token && (
+              <div className="relative" ref={notificationRef}>
+                <button
+                  onClick={() => setShowNotifications(!showNotifications)}
+                  className={`relative p-2 rounded-full ${textColor} ${hoverColor}`}
+                >
+                  <FiBell className="h-6 w-6" />
+                  {unreadCount > 0 && (
+                    <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-500 rounded-full">
+                      {unreadCount}
+                    </span>
+                  )}
+                </button>
+
+                {/* Notifications Dropdown */}
+                {showNotifications && (
+                  <div className={`absolute right-0 mt-2 w-80 rounded-md shadow-lg ${
+                    darkMode ? 'bg-gray-800' : 'bg-white'
+                  } ring-1 ring-black ring-opacity-5 z-50`}>
+                    <div className="py-2">
+                      <div className={`px-4 py-2 border-b ${
+                        darkMode ? 'border-gray-700' : 'border-gray-200'
+                      }`}>
+                        <h3 className={`text-sm font-semibold ${textColor}`}>Notifications</h3>
+                      </div>
+                      <div className="max-h-96 overflow-y-auto">
+                        {notifications.length > 0 ? (
+                          notifications.map(notification => (
+                            <div
+                              key={notification.id}
+                              onClick={() => handleNotificationClick(notification)}
+                              className={`px-4 py-3 hover:${darkMode ? 'bg-gray-700' : 'bg-gray-50'} cursor-pointer ${
+                                !notification.read ? (darkMode ? 'bg-gray-700/50' : 'bg-blue-50') : ''
+                              }`}
+                            >
+                              <div className="flex items-center">
+                                {notification.type === 'friend_request' && (
+                                  <>
+                                    <img
+                                      src={`http://localhost:5000/${notification.sender.image}`}
+                                      alt=""
+                                      className="h-8 w-8 rounded-full"
+                                    />
+                                    <div className="ml-3 flex-1">
+                                      <p className={`text-sm ${textColor}`}>
+                                        <span className="font-medium">{notification.sender.fullname}</span>
+                                        {' sent you a friend request'}
+                                      </p>
+                                      <p className={`text-xs ${
+                                        darkMode ? 'text-gray-400' : 'text-gray-500'
+                                      }`}>
+                                        {formatTimeAgo(notification.timestamp)}
+                                      </p>
+                                    </div>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="px-4 py-3 text-sm text-gray-500">
+                            No notifications
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Dark mode toggle button */}
             <button
               onClick={toggleDarkMode}
@@ -136,10 +291,6 @@ const Navbar = ({ setLoading }) => {
             <Link to="/messages" className={`${textColor} ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} block pl-3 pr-4 py-2 text-base font-medium flex items-center`}>
               <FiMessageSquare className={`h-5 w-5 mr-2 ${darkMode ? 'text-gray-100' : 'text-gray-700'}`} />
               Messages
-            </Link>
-            <Link to="/notifications" className={`${textColor} ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} block pl-3 pr-4 py-2 text-base font-medium flex items-center`}>
-              <FiBell className={`h-5 w-5 mr-2 ${darkMode ? 'text-gray-100' : 'text-gray-700'}`} />
-              Notifications
             </Link>
             <Link to="/suggestions" className={`${textColor} ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} block pl-3 pr-4 py-2 text-base font-medium flex items-center`}>
               <FiHelpCircle className={`h-5 w-5 mr-2 ${darkMode ? 'text-gray-100' : 'text-gray-700'}`} />

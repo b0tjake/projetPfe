@@ -24,7 +24,8 @@ const Profile = () => {
     showMenu: null,
     showConfirm: false,
     postToDelete: null,
-    isLoading: true
+    isLoading: true,
+    friendStatus: null,
   });
 
   const { id } = useParams();
@@ -191,9 +192,101 @@ const Profile = () => {
     }
   };
 
+  const fetchFriendStatus = async (loggedUserId, profileUserId) => {
+    try {
+      // Get user data to check friend status
+      const res = await axios.get(`http://localhost:5000/api/profile/profile/${profileUserId}`);
+      const user = res.data.user;
+      
+      if (user.friends.includes(loggedUserId)) {
+        return setState(prev => ({ ...prev, friendStatus: 'friends' }));
+      }
+      if (user.friendRequestsReceived.includes(loggedUserId)) {
+        return setState(prev => ({ ...prev, friendStatus: 'requested' }));
+      }
+      if (user.friendRequestsSent.includes(loggedUserId)) {
+        return setState(prev => ({ ...prev, friendStatus: 'pending' }));
+      }
+      setState(prev => ({ ...prev, friendStatus: 'not_friends' }));
+    } catch (error) {
+      console.error("Error fetching friend status:", error);
+    }
+  };
+
+  const sendFriendRequest = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(
+        `http://localhost:5000/api/friends/send/${id}`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+      setState(prev => ({ ...prev, friendStatus: "requested" }));
+    } catch (error) {
+      console.error("Error sending friend request:", error);
+    }
+  };
+
+  const cancelFriendRequest = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(
+        `http://localhost:5000/api/friends/cancel/${id}`,
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+      setState(prev => ({ ...prev, friendStatus: "not_friends" }));
+    } catch (error) {
+      console.error("Error canceling friend request:", error);
+    }
+  };
+
+  const acceptFriendRequest = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(
+        `http://localhost:5000/api/friends/accept/${id}`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+      setState(prev => ({ ...prev, friendStatus: "friends" }));
+    } catch (error) {
+      console.error("Error accepting friend request:", error);
+    }
+  };
+
+  const declineFriendRequest = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(
+        `http://localhost:5000/api/friends/decline/${id}`,
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+      setState(prev => ({ ...prev, friendStatus: "not_friends" }));
+    } catch (error) {
+      console.error("Error declining friend request:", error);
+    }
+  };
+
+  // Add this useEffect after the other useEffects
+  useEffect(() => {
+    if (decoded && id && decoded.id !== id) {
+      fetchFriendStatus(decoded.id, id);
+    }
+  }, [decoded, id]);
+
   if (state.error) return <div className="text-red-500 text-center py-10 text-lg">{state.error}</div>;
   if (state.isLoading) return <div className="text-center mt-10 text-gray-600">Loading profile...</div>;
   if (!state.userData) return <div className="text-center mt-10 text-gray-600">User not found</div>;
+
+  const isOwnProfile = decoded && decoded.id === state.userData._id;
 
   return (
     <div className={`min-h-screen ${darkMode ? 'bg-gray-900 text-gray-100' : 'bg-gray-50 text-gray-900'}`}>
@@ -202,110 +295,154 @@ const Profile = () => {
           {/* Sidebar */}
           <div 
             ref={addToRefs}
-            className={`w-full md:w-1/3 lg:w-1/4 ${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-md p-6 h-fit flex top-8`}
+            className={`w-full md:w-1/3 lg:w-1/4 ${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-md p-6 h-fit flex flex-col items-center`}
           >
-            <div className="flex flex-col items-center">
-              {/* Profile Picture */}
-              <div className="relative group mb-4">
-                <input
-                  type="file"
-                  accept="image/*"
-                  ref={fileInputRef}
-                  className="hidden"
-                  onChange={(e) => e.target.files[0] && editPhoto(e.target.files[0])}
-                />
-                <img
-                  src={`http://localhost:5000/${state.userData.image}`}
-                  alt="Profile"
-                  className="w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover"
-                />
-                {decoded && state.userData._id === decoded.id && (
-                  <button
-                    onClick={() => fileInputRef.current.click()}
-                    className="absolute bottom-0 right-0 bg-blue-500 text-white p-2 rounded-full hover:bg-blue-600 transition"
-                    aria-label="Change profile picture"
-                  >
-                    <FaUserEdit className="w-4 h-4" />
-                  </button>
-                )}
-              </div>
-
-              <h2 className="text-xl font-bold text-center">{state.userData.fullname}</h2>
-              <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'} text-center mb-6`}>
-                {state.profession || "No profession specified"}
-              </p>
-
-              {/* Profile Completion */}
-              {decoded && state.userData._id === decoded.id && (
-                <div className={`w-full p-4 rounded-lg mb-6 ${darkMode ? 'bg-gray-700' : 'bg-blue-50'}`}>
-                  <div className="flex justify-between items-center mb-2">
-                    <h3 className={`text-sm font-medium ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
-                      Profile Completion
-                    </h3>
-                    <span className="text-xs font-semibold text-blue-600">60%</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-1.5">
-                    <div 
-                      className="bg-blue-600 h-1.5 rounded-full" 
-                      style={{ width: '60%' }}
-                    />
-                  </div>
-                  <p className={`text-xs mt-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                    Complete your profile to get better visibility
-                  </p>
-                </div>
-              )}
-
-              {/* Stats */}
-              <div className="flex justify-between w-full border-t pt-4 mb-6">
-                {[
-                  { value: state.userPosts.length, label: "Posts" },
-                  { value: 0, label: "Followers" },
-                  { value: 0, label: "Following" }
-                ].map((stat, index) => (
-                  <div key={index} className="text-center px-2">
-                    <p className="font-bold">{stat.value}</p>
-                    <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                      {stat.label}
-                    </p>
-                  </div>
-                ))}
-              </div>
-
-              {/* Contact Info */}
-              <div className="w-full space-y-3">
-                <div className="flex items-center">
-                  <FaMapMarkerAlt className={`w-5 h-5 mr-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
-                  <span className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    {state.city || "Not specified"}
-                  </span>
-                </div>
-                <div className="flex items-center">
-                  <FaPhone className={`w-5 h-5 mr-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
-                  <span className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    {state.phone || "Not specified"}
-                  </span>
-                </div>
-              </div>
-
-              {/* Bio */}
-              <div className="w-full mt-6">
-                <h3 className={`font-medium mb-2 ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>About</h3>
-                <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                  {state.bio || "No bio provided"}
-                </p>
-              </div>
-
-              {/* Edit Profile Button */}
+            {/* Profile Picture Section */}
+            <div className="relative group mb-4">
+              <input
+                type="file"
+                accept="image/*"
+                ref={fileInputRef}
+                className="hidden"
+                onChange={(e) => e.target.files[0] && editPhoto(e.target.files[0])}
+              />
+              <img
+                src={`http://localhost:5000/${state.userData.image}`}
+                alt="Profile"
+                className="w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover"
+              />
               {decoded && state.userData._id === decoded.id && (
                 <button
-                  onClick={() => handleChange('isEditing', !state.isEditing)}
-                  className="w-full mt-6 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+                  onClick={() => fileInputRef.current.click()}
+                  className="absolute bottom-0 right-0 bg-blue-500 text-white p-2 rounded-full hover:bg-blue-600 transition"
+                  aria-label="Change profile picture"
                 >
-                  {state.isEditing ? "Cancel Editing" : "Edit Profile"}
+                  <FaUserEdit className="w-4 h-4" />
                 </button>
               )}
             </div>
+
+            <h2 className="text-xl font-bold text-center mb-2">{state.userData.fullname}</h2>
+            <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'} text-center mb-4`}>
+              {state.profession || "No profession specified"}
+            </p>
+
+            {/* Friend Buttons Section */}
+            {!isOwnProfile && decoded && (
+              <div className="flex flex-col space-y-3 w-full mb-6">
+                {state.friendStatus === "not_friends" && (
+                  <button
+                    onClick={sendFriendRequest}
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md transition"
+                  >
+                    Add Friend
+                  </button>
+                )}
+                {state.friendStatus === "requested" && (
+                  <button
+                    onClick={cancelFriendRequest}
+                    className="w-full bg-gray-400 hover:bg-gray-500 text-white py-2 px-4 rounded-md transition"
+                  >
+                    Cancel Request
+                  </button>
+                )}
+                {state.friendStatus === "pending" && (
+                  <div className="flex flex-col space-y-2 w-full">
+                    <button
+                      onClick={acceptFriendRequest}
+                      className="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md transition"
+                    >
+                      Accept Friend Request
+                    </button>
+                    <button
+                      onClick={declineFriendRequest}
+                      className="w-full bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-md transition"
+                    >
+                      Decline Request
+                    </button>
+                  </div>
+                )}
+                {state.friendStatus === "friends" && (
+                  <button
+                    onClick={declineFriendRequest}
+                    className="w-full bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-md transition"
+                  >
+                    Unfriend
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Profile Completion */}
+            {decoded && state.userData._id === decoded.id && (
+              <div className={`w-full p-4 rounded-lg mb-6 ${darkMode ? 'bg-gray-700' : 'bg-blue-50'}`}>
+                <div className="flex justify-between items-center mb-2">
+                  <h3 className={`text-sm font-medium ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
+                    Profile Completion
+                  </h3>
+                  <span className="text-xs font-semibold text-blue-600">60%</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-1.5">
+                  <div 
+                    className="bg-blue-600 h-1.5 rounded-full" 
+                    style={{ width: '60%' }}
+                  />
+                </div>
+                <p className={`text-xs mt-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                  Complete your profile to get better visibility
+                </p>
+              </div>
+            )}
+
+            {/* Stats */}
+            <div className="flex justify-between w-full border-t pt-4 mb-6">
+              {[
+                { value: state.userPosts.length, label: "Posts" },
+                { value: 0, label: "Followers" },
+                { value: 0, label: "Following" }
+              ].map((stat, index) => (
+                <div key={index} className="text-center px-2">
+                  <p className="font-bold">{stat.value}</p>
+                  <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                    {stat.label}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            {/* Contact Info */}
+            <div className="w-full space-y-3">
+              <div className="flex items-center">
+                <FaMapMarkerAlt className={`w-5 h-5 mr-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+                <span className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                  {state.city || "Not specified"}
+                </span>
+              </div>
+              <div className="flex items-center">
+                <FaPhone className={`w-5 h-5 mr-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+                <span className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                  {state.phone || "Not specified"}
+                </span>
+              </div>
+            </div>
+
+            {/* Bio */}
+            <div className="w-full mt-6">
+              <h3 className={`font-medium mb-2 ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>About</h3>
+              <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                {state.bio || "No bio provided"}
+              </p>
+            </div>
+
+            {/* Edit Profile Button */}
+            {decoded && state.userData._id === decoded.id && (
+              <button
+                onClick={() => handleChange('isEditing', !state.isEditing)}
+                className="w-full mt-6 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+              >
+                {state.isEditing ? "Cancel Editing" : "Edit Profile"}
+              </button>
+            )}
           </div>
 
           {/* Main Content */}
