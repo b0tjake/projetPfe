@@ -67,11 +67,11 @@ export default function Sidebar() {
                     <img
                       src={`http://localhost:5000/${user.image}`}
                       alt="Profile"
-                      className="w-full h-full rounded-full object-cover border-2 border-white cursor-pointer"
+                      className="w-full h-full rounded-full object-cover cursor-pointer"
                       onClick={() => navigate(`/profile/${user.id}`)}
                     />
                   </div>
-                  <div className="absolute bottom-0 right-0 w-6 h-6 rounded-full bg-green-500 border-2 border-white"></div>
+                  {/* <div className="absolute bottom-0 right-0 w-6 h-6 rounded-full bg-green-500 border-2 border-white"></div> */}
                 </div>
               </div>
               <div className="pt-14 text-center">
