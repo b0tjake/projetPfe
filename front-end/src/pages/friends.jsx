@@ -263,7 +263,7 @@ export default function Friends() {
                                   : 'text-red-500 hover:bg-red-50'
                               }`}
                             >
-                              Unfriend
+                              {/* Unfriend */}
                             </button>
                           )}
                           

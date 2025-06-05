@@ -3,8 +3,26 @@ const Post = require('../models/post');
 // const authMiddleware = require('../middleware/authMiddleware'); // JWT Middleware
 const multer = require('multer');
 const path = require('path');
+const jwt = require('jsonwebtoken');
 
 const router = express.Router();
+
+// Middleware to verify JWT token
+const verifyToken = (req, res, next) => {
+  const token = req.headers.authorization?.split(' ')[1];
+  if (!token) {
+    return res.status(401).json({ message: 'No token provided' });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.userId = decoded.id;
+    next();
+  } catch (err) {
+    console.error('Token verification error:', err);
+    return res.status(401).json({ message: 'Invalid token' });
+  }
+};
 
 // Configure multer for post image uploads
 const postStorage = multer.diskStorage({
@@ -120,5 +138,76 @@ router.delete('/:id', async (req, res) => {
   }
 })
 
+// Route to save a post
+router.post('/:postId/save', verifyToken, async (req, res) => {
+  const { postId } = req.params;
+  const userId = req.userId;
+
+  try {
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+
+    if (post.savedBy.includes(userId)) {
+      return res.status(400).json({ message: 'Post already saved' });
+    }
+
+    post.savedBy.push(userId);
+    await post.save();
+
+    // Populate the user field before sending response
+    const populatedPost = await Post.findById(postId)
+      .populate('user', 'id fullname image username')
+      .populate('comments.user', 'id fullname image');
+
+    res.json(populatedPost);
+  } catch (err) {
+    console.error('Error saving post:', err);
+    res.status(500).json({ message: 'Error saving post', err: err.message });
+  }
+});
+
+// Route to unsave a post
+router.post('/:postId/unsave', verifyToken, async (req, res) => {
+  const { postId } = req.params;
+  const userId = req.userId;
+
+  try {
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+
+    post.savedBy = post.savedBy.filter(id => id.toString() !== userId);
+    await post.save();
+
+    // Populate the user field before sending response
+    const populatedPost = await Post.findById(postId)
+      .populate('user', 'id fullname image username')
+      .populate('comments.user', 'id fullname image');
+
+    res.json(populatedPost);
+  } catch (err) {
+    console.error('Error unsaving post:', err);
+    res.status(500).json({ message: 'Error unsaving post', err: err.message });
+  }
+});
+
+// Route to get saved posts
+router.get('/saved', verifyToken, async (req, res) => {
+  try {
+    const userId = req.userId;
+    const savedPosts = await Post.find({ savedBy: userId })
+      .populate('user', 'id fullname image username')
+      .populate('comments.user', 'id fullname image')
+      .sort({ date: -1 });
+
+    res.json(savedPosts);
+  } catch (err) {
+    console.error('Error fetching saved posts:', err);
+    res.status(500).json({ message: 'Error fetching saved posts', err: err.message });
+  }
+});
 
 module.exports = router;

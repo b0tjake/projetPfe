@@ -129,7 +129,7 @@ const navigate = useNavigate();
       )}
       </div>
 
-      {!isAuthPage && <Footer />}
+      {!isAuthPage && !["/", "/friends", "/messages", "/saved"].includes(location.pathname) && !location.pathname.startsWith('/profile') && <Footer />}
     </>
   );
 }

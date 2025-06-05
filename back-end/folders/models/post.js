@@ -20,6 +20,10 @@ const postSchema = new mongoose.Schema({
     ref: 'User', // Array of users who liked the post
   }
 ],
+  savedBy: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User', // Array of users who saved the post
+  }],
   comments: [{
     user: { type: mongoose.Schema.Types.ObjectId,
             ref: 'User'
