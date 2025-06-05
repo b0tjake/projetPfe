@@ -3,7 +3,7 @@ import { jwtDecode } from "jwt-decode";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import gsap from "gsap";
-import { FaHeart, FaComment, FaEllipsisV, FaMapMarkerAlt, FaPhone, FaUserEdit, FaSun, FaMoon, FaImage } from "react-icons/fa";
+import { FaHeart, FaComment, FaEllipsisV, FaMapMarkerAlt, FaPhone, FaUserEdit, FaSun, FaMoon, FaImage, FaUserPlus, FaTimes, FaCheck, FaUserMinus } from "react-icons/fa";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { DarkModeContext } from "../assets/darkmode";
 
@@ -333,16 +333,18 @@ const Profile = () => {
                 {state.friendStatus === "not_friends" && (
                   <button
                     onClick={sendFriendRequest}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md transition"
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md transition flex items-center justify-center gap-2"
                   >
+                    <FaUserPlus className="w-4 h-4" />
                     Add Friend
                   </button>
                 )}
                 {state.friendStatus === "requested" && (
                   <button
                     onClick={cancelFriendRequest}
-                    className="w-full bg-gray-400 hover:bg-gray-500 text-white py-2 px-4 rounded-md transition"
+                    className="w-full bg-gray-400 hover:bg-gray-500 text-white py-2 px-4 rounded-md transition flex items-center justify-center gap-2"
                   >
+                    <FaTimes className="w-4 h-4" />
                     Cancel Request
                   </button>
                 )}
@@ -350,25 +352,37 @@ const Profile = () => {
                   <div className="flex flex-col space-y-2 w-full">
                     <button
                       onClick={acceptFriendRequest}
-                      className="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md transition"
+                      className="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md transition flex items-center justify-center gap-2"
                     >
+                      <FaCheck className="w-4 h-4" />
                       Accept Friend Request
                     </button>
                     <button
                       onClick={declineFriendRequest}
-                      className="w-full bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-md transition"
+                      className="w-full bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-md transition flex items-center justify-center gap-2"
                     >
+                      <FaTimes className="w-4 h-4" />
                       Decline Request
                     </button>
                   </div>
                 )}
                 {state.friendStatus === "friends" && (
-                  <button
-                    onClick={declineFriendRequest}
-                    className="w-full bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-md transition"
-                  >
-                    Unfriend
-                  </button>
+                  <div className="flex flex-col space-y-3 w-full">
+                    <button
+                      onClick={declineFriendRequest}
+                      className="w-full bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-md transition flex items-center justify-center gap-2"
+                    >
+                      <FaUserMinus className="w-4 h-4" />
+                      Unfriend
+                    </button>
+                    <button
+                      onClick={() => navigate(`/messages?user=${state.userData._id}`)}
+                      className="w-full bg-blue-600 hover:bg-[#0077B6] text-white py-2 px-4 rounded-md transition flex items-center justify-center gap-2"
+                    >
+                      <FaComment className="w-4 h-4" />
+                      Send Message
+                    </button>
+                  </div>
                 )}
               </div>
             )}
@@ -395,19 +409,20 @@ const Profile = () => {
             )}
 
             {/* Stats */}
-            <div className="flex justify-between w-full border-t pt-4 mb-6">
-              {[
-                { value: state.userPosts.length, label: "Posts" },
-                { value: 0, label: "Followers" },
-                { value: 0, label: "Following" }
-              ].map((stat, index) => (
-                <div key={index} className="text-center px-2">
-                  <p className="font-bold">{stat.value}</p>
-                  <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                    {stat.label}
-                  </p>
-                </div>
-              ))}
+            <div className="flex justify-center w-full border-t pt-4 mb-6">
+              <div className="flex space-x-12">
+                {[
+                  { value: state.userPosts.length, label: "Posts" },
+                  { value: state.userData.friends?.length || 0, label: "Friends" }
+                ].map((stat, index) => (
+                  <div key={index} className="text-center">
+                    <p className="font-bold text-lg">{stat.value}</p>
+                    <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                      {stat.label}
+                    </p>
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* Contact Info */}
