@@ -9,10 +9,10 @@ const Footer = () => {
           <div className="lg:col-span-4">
             <div className="flex items-center mb-8">
               <div className="bg-[#ffffff]  rounded-xl mr-4 shadow-lg">
-                <img src="/src/assets/images/joualaLogo.png" className="w-14 text-white" />
+                <img src="/src/assets/images/Logo2.png" className="w-14 text-white" />
               </div>
               <h2 className="text-3xl font-bold tracking-tight">
-                Jou<span className="text-[#F4A261]">ala</span>
+                Jou<span className="text-[#0077B6]">ala</span>
               </h2>
             </div>
             <p className="text-lg text-gray-100 mb-8 max-w-md">
@@ -43,7 +43,7 @@ const Footer = () => {
 
           <div className="lg:col-span-8 grid grid-cols-2 md:grid-cols-4 gap-8">
             <div>
-              <h3 className="text-xl font-semibold mb-6 text-[#F4A261] border-b border-[#F4A261]/30 pb-2">
+              <h3 className="text-xl font-semibold mb-6 text-[#0077B6] border-b border-[#0077B6]/30 pb-2">
                 Product
               </h3>
               <ul className="space-y-4">
@@ -63,7 +63,7 @@ const Footer = () => {
             </div>
 
             <div>
-              <h3 className="text-xl font-semibold mb-6 text-[#F4A261] border-b border-[#F4A261]/30 pb-2">
+              <h3 className="text-xl font-semibold mb-6 text-[#0077B6] border-b border-[#0077B6]/30 pb-2">
                 Resources
               </h3>
               <ul className="space-y-4">
@@ -83,7 +83,7 @@ const Footer = () => {
             </div>
 
             <div>
-              <h3 className="text-xl font-semibold mb-6 text-[#F4A261] border-b border-[#F4A261]/30 pb-2">
+              <h3 className="text-xl font-semibold mb-6 text-[#0077B6] border-b border-[#0077B6]/30 pb-2">
                 Company
               </h3>
               <ul className="space-y-4">
@@ -101,7 +101,7 @@ const Footer = () => {
             </div>
 
             <div>
-              <h3 className="text-xl font-semibold mb-6 text-[#F4A261] border-b border-[#F4A261]/30 pb-2">
+              <h3 className="text-xl font-semibold mb-6 text-[#0077B6] border-b border-[#0077B6]/30 pb-2">
                 Legal
               </h3>
               <ul className="space-y-4">
@@ -136,7 +136,7 @@ const Footer = () => {
               placeholder="Enter your email"
               className="w-full px-4 py-3 rounded-l-lg bg-white text-black focus:outline-none"
             />
-            <button className="bg-[#F4A261] hover:bg-[#e68a45] px-6 py-3 rounded-r-lg font-semibold text-gray-900 transition-colors">
+            <button className="bg-[#0077B6] hover:bg-[#005f91] px-6 py-3 rounded-r-lg font-semibold text-gray-900 transition-colors">
               Subscribe
             </button>
           </div>

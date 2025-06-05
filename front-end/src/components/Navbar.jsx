@@ -161,7 +161,7 @@ const Navbar = ({ setLoading }) => {
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <Link to="/" className="flex-shrink-0 flex items-center">
-              <img className="w-20 rounded-full" src="/src/assets/images/joualaLogo1.png" alt="Logo" />
+              <img className="w-20 rounded-full" src="/src/assets/images/Logo2.png" alt="Logo" />
             </Link>
 
             <div className="hidden sm:ml-6 sm:flex sm:space-x-4">
