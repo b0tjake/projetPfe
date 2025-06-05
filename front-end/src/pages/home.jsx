@@ -264,7 +264,7 @@ export default function Home() {
             posts.map((post) => (
               <div 
                 key={post._id} 
-                className={`mb-4 rounded-lg shadow-sm border overflow-hidden transition-all duration-300 ${
+                className={`mb-2 rounded-lg shadow-sm border overflow-hidden transition-all duration-300 ${
                   darkMode 
                     ? 'bg-gray-800 border-gray-700' 
                     : 'bg-white border-gray-200'
