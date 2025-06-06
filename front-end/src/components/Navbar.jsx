@@ -330,7 +330,7 @@ const Navbar = ({ setLoading }) => {
                     <img className="w-10 h-10 rounded-full" src={`http://localhost:5000/${userData.image}`} alt="User" />
                   </Link>
                 )}
-                <button onClick={logOut} className="text-white hover:bg-red-400 bg-red-600 dark:hover:bg-red-700 px-3 py-2 rounded-md text-sm font-medium flex items-center">
+                <button onClick={logOut} className="text-white hover:bg-[#005885] bg-[#0077B6] px-3 py-2 rounded-md text-sm font-medium flex items-center">
                   <FiLogOut className="h-5 w-5 mr-1" />
                   Logout
                 </button>
@@ -387,8 +387,8 @@ const Navbar = ({ setLoading }) => {
                   <FiSettings className={`h-5 w-5 mr-2 ${darkMode ? 'text-gray-100' : 'text-gray-700'}`} />
                   Settings
                 </Link>
-                <button onClick={logOut} className={`${textColor} ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} block pl-3 pr-4 py-2 text-base font-medium w-full text-left flex items-center`}>
-                  <FiLogOut className={`h-5 w-5 mr-2 ${darkMode ? 'text-gray-100' : 'text-gray-700'}`} />
+                <button onClick={logOut} className="text-white hover:bg-[#005885] bg-[#0077B6] block pl-3 pr-4 py-2 text-base font-medium w-full text-left flex items-center">
+                  <FiLogOut className="h-5 w-5 mr-2" />
                   Logout
                 </button>
               </>

@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useContext } from "react";
 import { jwtDecode } from "jwt-decode";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import gsap from "gsap";
 import { FaHeart, FaComment, FaEllipsisV, FaMapMarkerAlt, FaPhone, FaUserEdit, FaSun, FaMoon, FaImage, FaUserPlus, FaTimes, FaCheck, FaUserMinus } from "react-icons/fa";
@@ -35,6 +35,11 @@ const Profile = () => {
   const [showCreatePostModal, setShowCreatePostModal] = useState(false);
   const [newPost, setNewPost] = useState({ content: '', image: null });
   const postImageRef = useRef(null);
+  const [commentInputs, setCommentInputs] = useState({});
+  const [showComments, setShowComments] = useState({});
+  const [userId, setUserId] = useState(null);
+  const [user, setUser] = useState(null);
+  const token = localStorage.getItem("token");
 
   // Add section to refs array for animations
   const addToRefs = (el) => {
@@ -77,6 +82,8 @@ const Profile = () => {
     try {
       const decodedToken = jwtDecode(token);
       setDecoded(decodedToken);
+      setUser(decodedToken);
+      setUserId(decodedToken.id);
       fetchUserData();
     } catch (err) {
       setState(prev => ({ ...prev, error: "Invalid token" }));
@@ -281,6 +288,117 @@ const Profile = () => {
       fetchFriendStatus(decoded.id, id);
     }
   }, [decoded, id]);
+
+  const handleLike = async (postId) => {
+    try {
+      const res = await axios.post("http://localhost:5000/api/posts/like", {
+        postId,
+        userId,
+      });
+      setState(prev => ({
+        ...prev,
+        userPosts: prev.userPosts.map((p) =>
+          p._id === postId
+            ? {
+                ...p,
+                likes: res.data.likes,
+                likesCount: res.data.likes.length,
+              }
+            : p
+        )
+      }));
+    } catch (error) {
+      console.error("Error liking post:", error);
+    }
+  };
+
+  const toggleComments = (postId) => {
+    setShowComments((prev) => ({
+      ...prev,
+      [postId]: !prev[postId],
+    }));
+  };
+
+  const handleComment = async (postId) => {
+    try {
+      const textValue = commentInputs[postId];
+      if (!textValue.trim()) return;
+
+      const res = await axios.post("http://localhost:5000/api/posts/comment", {
+        userId,
+        postId,
+        textValue,
+      });
+
+      setState(prev => ({
+        ...prev,
+        userPosts: prev.userPosts.map((p) =>
+          p._id === postId
+            ? {
+                ...p,
+                comments: res.data.comments || [],
+                commentsCount: Array.isArray(res.data.comments)
+                  ? res.data.comments.length
+                  : 0,
+              }
+            : p
+        )
+      }));
+
+      setCommentInputs((prev) => ({
+        ...prev,
+        [postId]: "",
+      }));
+    } catch (err) {
+      console.error("Error posting comment:", err);
+    }
+  };
+
+  const handleCommentChange = (postId, value) => {
+    setCommentInputs((prev) => ({
+      ...prev,
+      [postId]: value,
+    }));
+  };
+
+  const handleSavePost = async (postId) => {
+    if (!token) {
+      setState(prev => ({ ...prev, error: "Please log in to save posts" }));
+      return;
+    }
+
+    try {
+      const isSaved = state.userPosts.find(p => p._id === postId)?.savedBy?.includes(userId);
+      const endpoint = isSaved ? "unsave" : "save";
+      
+      const res = await axios.post(
+        `http://localhost:5000/api/posts/${postId}/${endpoint}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      setState(prev => ({
+        ...prev,
+        userPosts: prev.userPosts.map((p) =>
+          p._id === postId
+            ? {
+                ...p,
+                savedBy: res.data.savedBy || [],
+                savedCount: res.data.savedBy?.length || 0,
+              }
+            : p
+        )
+      }));
+    } catch (error) {
+      console.error("Error saving/unsaving post:", error);
+      setState(prev => ({ ...prev, error: error.response?.data?.message || "Failed to save post" }));
+    }
+  };
 
   if (state.error) return <div className="text-red-500 text-center py-10 text-lg">{state.error}</div>;
   if (state.isLoading) return <div className="text-center mt-10 text-gray-600">Loading profile...</div>;
@@ -550,26 +668,37 @@ const Profile = () => {
                     <div 
                       key={post._id}
                       ref={addToRefs}
-                      className={`rounded-xl overflow-hidden transition-shadow ${
-                        darkMode ? 'bg-gray-800 hover:shadow-lg' : 'bg-white hover:shadow-md'
-                      } shadow-sm`}
+                      className={`rounded-lg shadow-sm border overflow-hidden transition-all duration-300 ${
+                        darkMode 
+                          ? 'bg-gray-800 border-gray-700' 
+                          : 'bg-white border-gray-200'
+                      }`}
                     >
-                      {/* Post header */}
-                      <div className={`p-4 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                        <div className="flex justify-between items-center">
-                          <div className="flex items-center space-x-3">
-                            <img
-                              src={`http://localhost:5000/${state.userData.image}`}
-                              className="w-10 h-10 rounded-full object-cover"
-                              alt="User"
+                      {/* User info section with timestamp */}
+                      <div className="p-3">
+                        <div className="flex items-center">
+                          <Link to={`profile/${state.userData._id}`} className="flex-shrink-0">
+                            <img 
+                              src={`http://localhost:5000/${state.userData.image}`} 
+                              alt="User" 
+                              className="w-10 h-10 rounded-full object-cover" 
                             />
-                            <div>
-                              <h3 className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                                {state.userData.fullname}
-                              </h3>
-                              <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                                {formatDate(post.createdAt)}
-                              </p>
+                          </Link>
+                          <div className="flex-1 ml-3">
+                            <Link 
+                              to={`profile/${state.userData._id}`} 
+                              className={`font-semibold text-[15px] hover:underline ${
+                                darkMode ? 'text-gray-100' : 'text-gray-900'
+                              }`}
+                            >
+                              {state.userData.fullname}
+                            </Link>
+                            <div className={`flex items-center text-[13px] ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                              <span>{formatDate(post.createdAt)}</span>
+                              <span className="mx-1">•</span>
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
                             </div>
                           </div>
                           {state.userData._id === decoded?.id && (
@@ -579,10 +708,7 @@ const Profile = () => {
                                   'showMenu', 
                                   post._id === state.showMenu ? null : post._id
                                 )}
-                                className={`p-1 rounded-full ${
-                                  darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'
-                                }`}
-                                aria-label="Post options"
+                                className={`p-1.5 rounded-full hover:bg-gray-100 transition-colors ${darkMode ? 'hover:bg-gray-700' : ''}`}
                               >
                                 <FaEllipsisV className="w-5 h-5" />
                               </button>
@@ -611,36 +737,153 @@ const Profile = () => {
                       </div>
 
                       {/* Post content */}
-                      <div className="p-4">
-                        <p className={`mb-3 ${darkMode ? 'text-gray-300' : 'text-gray-800'}`}>
+                      <div className="px-3 pb-3">
+                        <p className={`text-[15px] leading-5 ${darkMode ? 'text-gray-200' : 'text-gray-900'}`}>
                           {post.content}
                         </p>
-                        {post.image && (
-                          <img
-                            src={`http://localhost:5000/${post.image}`}
-                            className="w-full h-64 object-cover rounded-lg"
-                            alt="Post"
-                          />
-                        )}
                       </div>
 
-                      {/* Post actions */}
-                      <div className={`p-3 border-t ${
+                      {/* Post image */}
+                      {post.image && (
+                        <div className="relative">
+                          <img 
+                            src={`http://localhost:5000/${post.image}`} 
+                            alt="Post" 
+                            className="w-full h-auto object-cover" 
+                          />
+                        </div>
+                      )}
+
+                      {/* Likes and comments count */}
+                      <div className={`px-3 py-2 border-b flex items-center justify-between text-[13px] ${
+                        darkMode ? 'border-gray-700 text-gray-400' : 'border-gray-200 text-gray-500'
+                      }`}>
+                        <div className="flex items-center">
+                          <div className="flex items-center -space-x-1">
+                            <div className="bg-blue-500 rounded-full p-1">
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-white" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
+                              </svg>
+                            </div>
+                          </div>
+                          <span className="ml-2">{post.likesCount > 0 ? post.likesCount : ''} {post.likesCount === 1 ? "like" : post.likesCount > 1 ? "likes" : ""}</span>
+                        </div>
+                        <div className="flex items-center space-x-4">
+                          {post.commentsCount > 0 && (
+                            <button onClick={() => toggleComments(post._id)} className="hover:underline">
+                              {post.commentsCount} {post.commentsCount === 1 ? "comment" : "comments"}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Action buttons */}
+                      <div className={`px-2 py-1 flex items-center justify-between ${
                         darkMode ? 'border-gray-700' : 'border-gray-200'
-                      } flex space-x-4`}>
-                        <button className={`flex items-center space-x-1 ${
-                          darkMode ? 'text-gray-400 hover:text-blue-400' : 'text-gray-500 hover:text-blue-500'
-                        }`}>
-                          <FaHeart className="w-5 h-5" />
-                          <span className="text-sm">Like</span>
+                      }`}>
+                        <button
+                          onClick={() => handleLike(post._id)}
+                          className={`flex items-center justify-center flex-1 py-2 rounded-md mx-1 hover:bg-gray-100 transition-colors ${
+                            post.likes?.includes(userId) ? "text-blue-600" : ""
+                          } ${darkMode ? 'hover:bg-gray-700' : ''}`}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 mr-1 ${post.likes?.includes(userId) ? "fill-blue-600" : ""}`} viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
+                          </svg>
+                          <span className="text-[15px] font-medium">Like</span>
                         </button>
-                        <button className={`flex items-center space-x-1 ${
-                          darkMode ? 'text-gray-400 hover:text-green-400' : 'text-gray-500 hover:text-green-500'
-                        }`}>
-                          <FaComment className="w-5 h-5" />
-                          <span className="text-sm">Comment</span>
+
+                        <button
+                          onClick={() => toggleComments(post._id)}
+                          className={`flex items-center justify-center flex-1 py-2 rounded-md mx-1 hover:bg-gray-100 transition-colors ${darkMode ? 'hover:bg-gray-700' : ''}`}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                          </svg>
+                          <span className="text-[15px] font-medium">Comment</span>
+                        </button>
+
+                        <button
+                          onClick={() => handleSavePost(post._id)}
+                          className={`flex items-center justify-center flex-1 py-2 rounded-md mx-1 hover:bg-gray-100 transition-colors ${
+                            post.savedBy?.includes(userId) ? "text-blue-600" : ""
+                          } ${darkMode ? 'hover:bg-gray-700' : ''}`}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 mr-1 ${post.savedBy?.includes(userId) ? "fill-blue-600" : ""}`} viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z" />
+                          </svg>
+                          <span className="text-[15px] font-medium">Save</span>
                         </button>
                       </div>
+
+                      {/* Comments section */}
+                      {showComments[post._id] && (
+                        <div className={`px-3 py-2 border-t ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'}`}>
+                          {/* Existing comments */}
+                          {post.comments?.length > 0 && (
+                            <div className="space-y-2 mb-3">
+                              {post.comments.map((comment, index) => (
+                                <div key={index} className="flex items-start">
+                                  <Link to={`profile/${comment.user?._id}`} className="flex-shrink-0">
+                                    <img src={`http://localhost:5000/${comment.user?.image}`} alt="User" className="w-8 h-8 rounded-full object-cover" />
+                                  </Link>
+                                  <div className="flex-1 ml-2">
+                                    <div className={`inline-block px-3 py-2 rounded-2xl ${
+                                      darkMode ? 'bg-gray-700' : 'bg-gray-100'
+                                    }`}>
+                                      <Link to={`profile/${comment.user?._id}`} className={`font-semibold text-[13px] hover:underline ${
+                                        darkMode ? 'text-gray-100' : 'text-gray-900'
+                                      }`}>
+                                        {comment.user?.fullname}
+                                      </Link>
+                                      <p className={`text-[15px] mt-1 ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
+                                        {comment.text}
+                                      </p>
+                                    </div>
+                                    <div className={`flex items-center mt-1 space-x-3 text-[12px] ${
+                                      darkMode ? 'text-gray-400' : 'text-gray-500'
+                                    }`}>
+                                      <button className="hover:underline font-semibold">Like</button>
+                                      <button className="hover:underline font-semibold">Reply</button>
+                                      <span>{new Date(comment.createdAt).toLocaleDateString()}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          {/* Comment input */}
+                          <div className="flex items-center">
+                            <img 
+                              src={`http://localhost:5000/${jwtDecode(token)?.image}`} 
+                              alt="User" 
+                              className="w-8 h-8 rounded-full object-cover flex-shrink-0" 
+                            />
+                            <div className={`flex-1 flex rounded-full border overflow-hidden ml-2 ${
+                              darkMode ? 'bg-gray-700 border-gray-600' : 'bg-gray-100 border-gray-200'
+                            }`}>
+                              <input
+                                type="text"
+                                value={commentInputs[post._id] || ""}
+                                onChange={(e) => handleCommentChange(post._id, e.target.value)}
+                                placeholder="Write a comment..."
+                                className={`flex-1 px-4 py-2 text-[15px] focus:outline-none ${
+                                  darkMode ? 'bg-gray-700 text-gray-100 placeholder-gray-400' : 'bg-gray-100 text-gray-900 placeholder-gray-500'
+                                }`}
+                              />
+                              <button
+                                onClick={() => handleComment(post._id)}
+                                className={`px-3 font-medium text-[15px] ${
+                                  darkMode ? 'text-blue-400 hover:bg-gray-600' : 'text-blue-600 hover:bg-gray-200'
+                                }`}
+                                disabled={!commentInputs[post._id]?.trim()}
+                              >
+                                Post
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))
                 ) : (
