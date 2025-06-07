@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "./login.css";
-import { FaGoogle, FaFacebookF, FaXTwitter } from "react-icons/fa6"; 
+import { FaGoogle, FaFacebookF, FaXTwitter, FaEye, FaEyeSlash } from "react-icons/fa6"; 
 import gsap from "gsap";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -9,6 +9,7 @@ export default function Login({setLoading}) {
   // for gsap
   const [emailState, setEmailState] = useState(false);
   const [passState, setPassState] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   // for handleLogin
   const [email, setEmail] = useState("");
@@ -128,7 +129,7 @@ export default function Login({setLoading}) {
 
             <div className="relative mb-4">
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 id="password"
                 placeholder=" "
                 className="w-full px-4 py-3 border border-gray-300 rounded-md peer"
@@ -141,6 +142,13 @@ export default function Login({setLoading}) {
               >
                 Password
               </label>
+              <button
+                type="button"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </button>
             </div>
             <div>
               <p className="pb-4 text-gray-500">
