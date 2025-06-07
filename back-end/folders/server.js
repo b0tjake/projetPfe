@@ -8,6 +8,8 @@ const post = require('./routes/routepost');
 const showUsers = require('./admin/admin');
 const profile = require('./routes/profile');
 const friendsRoutes = require('./routes/friends');
+const notificationsRoutes = require('./routes/notifications');
+const messagesRoutes = require('./routes/messages');
 const path = require('path');
 
 dotenv.config();
@@ -23,7 +25,9 @@ app.use("/api/posts", post);
 app.use("/api/suggestions", suggestionRoutes);
 app.use("/api/admin", showUsers);
 app.use("/api/profile", profile);
-app.use("/api/friends", friendsRoutes); // Friends route
+app.use("/api/friends", friendsRoutes);
+app.use("/api/notifications", notificationsRoutes);
+app.use("/api/messages", messagesRoutes);
 
 // Static images
 app.use('/profilePics', express.static(path.join(__dirname, 'profilePics')));

@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 
 const Footer = () => {
   return (
-    <footer className="bg-gray-800 text-white relative overflow-hidden">
+    <footer className="bg-gray-700 text-white relative overflow-hidden">
       <div className="relative max-w-8xl mx-auto px-8 py-16">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 mb-6">
           <div className="lg:col-span-4">

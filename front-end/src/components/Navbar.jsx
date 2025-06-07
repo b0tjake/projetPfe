@@ -42,49 +42,42 @@ const Navbar = ({ setLoading }) => {
 
   const fetchNotifications = async (userId) => {
     try {
-      const response = await axios.get(`http://localhost:5000/api/profile/profile/${userId}`);
-      const user = response.data.user;
+      const response = await axios.get(`http://localhost:5000/api/notifications`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
       
-      // Get friend requests
-      const friendRequests = await Promise.all(
-        user.friendRequestsReceived.map(async (senderId) => {
-          const senderResponse = await axios.get(`http://localhost:5000/api/profile/profile/${senderId}`);
-          return {
-            id: Date.now() + Math.random(),
-            type: 'friend_request',
-            sender: senderResponse.data.user,
-            timestamp: new Date(),
-            read: false
-          };
-        })
-      );
-
-      // Combine all notifications and sort by timestamp
-      const allNotifications = [
-        ...friendRequests,
-        // Add other types of notifications here when implemented
-      ].sort((a, b) => b.timestamp - a.timestamp);
-
-      setNotifications(allNotifications);
-      setUnreadCount(allNotifications.filter(n => !n.read).length);
+      setNotifications(response.data);
+      setUnreadCount(response.data.filter(n => !n.read).length);
     } catch (error) {
       console.error('Error fetching notifications:', error);
     }
   };
 
-  const markAsRead = (notificationId) => {
-    setNotifications(prev => 
-      prev.map(notification => 
-        notification.id === notificationId 
-          ? { ...notification, read: true }
-          : notification
-      )
-    );
-    setUnreadCount(prev => Math.max(0, prev - 1));
+  const markAsRead = async (notificationId) => {
+    try {
+      await axios.put(`http://localhost:5000/api/notifications/${notificationId}/read`, {}, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      
+      setNotifications(prev => 
+        prev.map(notification => 
+          notification._id === notificationId 
+            ? { ...notification, read: true }
+            : notification
+        )
+      );
+      setUnreadCount(prev => Math.max(0, prev - 1));
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+    }
   };
 
   const handleNotificationClick = (notification) => {
-    markAsRead(notification.id);
+    markAsRead(notification._id);
     setShowNotifications(false);
     
     // Handle different notification types
@@ -92,9 +85,38 @@ const Navbar = ({ setLoading }) => {
       case 'friend_request':
         navigate(`/profile/${notification.sender._id}`);
         break;
-      // Add other cases when implementing more notification types
+      case 'like':
+      case 'comment':
+        navigate(`/profile/${notification.sender._id}`);
+        break;
       default:
         break;
+    }
+  };
+
+  const getNotificationContent = (notification) => {
+    switch (notification.type) {
+      case 'friend_request':
+        return `${notification.sender.fullname} sent you a friend request`;
+      case 'like':
+        return `${notification.sender.fullname} liked your post`;
+      case 'comment':
+        return `${notification.sender.fullname} commented on your post`;
+      default:
+        return '';
+    }
+  };
+
+  const getNotificationIcon = (type) => {
+    switch (type) {
+      case 'friend_request':
+        return <FiUserPlus className="w-5 h-5" />;
+      case 'like':
+        return <FiHeart className="w-5 h-5" />;
+      case 'comment':
+        return <FiMessageSquare className="w-5 h-5" />;
+      default:
+        return null;
     }
   };
 
@@ -272,33 +294,35 @@ const Navbar = ({ setLoading }) => {
                         {notifications.length > 0 ? (
                           notifications.map(notification => (
                             <div
-                              key={notification.id}
+                              key={notification._id}
                               onClick={() => handleNotificationClick(notification)}
                               className={`px-4 py-3 hover:${darkMode ? 'bg-gray-700' : 'bg-gray-50'} cursor-pointer ${
                                 !notification.read ? (darkMode ? 'bg-gray-700/50' : 'bg-blue-50') : ''
                               }`}
                             >
                               <div className="flex items-center">
-                                {notification.type === 'friend_request' && (
-                                  <>
-                                    <img
-                                      src={`http://localhost:5000/${notification.sender.image}`}
-                                      alt=""
-                                      className="h-8 w-8 rounded-full"
-                                    />
-                                    <div className="ml-3 flex-1">
-                                      <p className={`text-sm ${textColor}`}>
-                                        <span className="font-medium">{notification.sender.fullname}</span>
-                                        {' sent you a friend request'}
-                                      </p>
-                                      <p className={`text-xs ${
-                                        darkMode ? 'text-gray-400' : 'text-gray-500'
-                                      }`}>
-                                        {formatTimeAgo(notification.timestamp)}
-                                      </p>
-                                    </div>
-                                  </>
-                                )}
+                                <img
+                                  src={`http://localhost:5000/${notification.sender.image}`}
+                                  alt=""
+                                  className="h-8 w-8 rounded-full"
+                                />
+                                <div className="ml-3 flex-1">
+                                  <p className={`text-sm ${textColor}`}>
+                                    {getNotificationContent(notification)}
+                                  </p>
+                                  <p className={`text-xs ${
+                                    darkMode ? 'text-gray-400' : 'text-gray-500'
+                                  }`}>
+                                    {formatTimeAgo(notification.createdAt)}
+                                  </p>
+                                </div>
+                                <div className={`ml-2 ${
+                                  notification.type === 'like' ? 'text-red-500' :
+                                  notification.type === 'comment' ? 'text-blue-500' :
+                                  'text-purple-500'
+                                }`}>
+                                  {getNotificationIcon(notification.type)}
+                                </div>
                               </div>
                             </div>
                           ))

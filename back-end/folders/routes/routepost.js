@@ -1,5 +1,6 @@
 const express = require('express');
 const Post = require('../models/post');
+const Notification = require('../models/notification');
 // const authMiddleware = require('../middleware/authMiddleware'); // JWT Middleware
 const multer = require('multer');
 const path = require('path');
@@ -79,30 +80,41 @@ router.get('/', async (req, res) => {
 
 // Route to like a post
 router.post('/like', async (req, res) => {
- const {postId,userId} = req.body
+  const {postId, userId} = req.body;
   try {
     const post = await Post.findById(postId);
+    const postOwner = post.user;
 
     if (post.likes.includes(userId)) {
       post.likes = post.likes.filter((like) => like.toString() !== userId);
     } else {
       post.likes.push(userId);
+      // Create notification for like
+      if (postOwner.toString() !== userId) {
+        const notification = new Notification({
+          recipient: postOwner,
+          sender: userId,
+          type: 'like',
+          post: postId
+        });
+        await notification.save();
+      }
     }
 
     await post.save();
     res.json(post);
   } catch (err) {
-    res.status(400).json({ message: 'Error liking post',err });
+    res.status(400).json({ message: 'Error liking post', err });
   }
 });
 
-// Route to add a comment
 // Route to add a comment
 router.post('/comment', async (req, res) => {
   const { postId, userId, textValue } = req.body;
 
   try {
     const post = await Post.findById(postId);
+    const postOwner = post.user;
     const comment = {
       user: userId,
       text: textValue,
@@ -111,15 +123,25 @@ router.post('/comment', async (req, res) => {
     post.comments.push(comment);
     await post.save();
 
-    // Populate بعد ما كتسالي
+    // Create notification for comment
+    if (postOwner.toString() !== userId) {
+      const notification = new Notification({
+        recipient: postOwner,
+        sender: userId,
+        type: 'comment',
+        post: postId
+      });
+      await notification.save();
+    }
+
+    // Populate after saving
     const updatedPost = await Post.findById(postId)
       .populate('comments.user', 'fullname image');
 
-      res.json({
-        comments: updatedPost.comments,
-        commentsCount: updatedPost.comments.length
-      });
-       // رجع فقط الكومنتات populated
+    res.json({
+      comments: updatedPost.comments,
+      commentsCount: updatedPost.comments.length
+    });
   } catch (err) {
     res.status(400).json({ message: 'Error adding comment', err });
   }

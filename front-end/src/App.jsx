@@ -86,6 +86,7 @@ const navigate = useNavigate();
           <Route path="/register" element={<Register setLoading={setLoading} />} />
           <Route path="/about" element={<About/>}/>
           <Route path="/messages" element={<Messages />} />
+          <Route path="/messages/:userId" element={<Messages />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/friends" element={<Friends />} />
           <Route path="/saved" element={<SavedPosts />} />

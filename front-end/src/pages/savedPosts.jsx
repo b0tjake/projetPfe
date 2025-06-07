@@ -131,12 +131,12 @@ export default function SavedPosts() {
           <div className={`h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
             <div className={`p-6 ${darkMode ? 'bg-gray-800' : 'bg-white'} h-full`}>
               <div className="flex justify-between items-center mb-6">
-                <h1 className={`text-2xl font-bold ${
+                {/* <h1 className={`text-2xl font-bold ${
                   darkMode ? 'text-white' : 'text-gray-900'
                 }`}>
                   Saved Posts
-                </h1>
-                <div className={`relative ${
+                </h1> */}
+                {/* <div className={`relative ${
                   darkMode ? 'bg-gray-700' : 'bg-gray-100'
                 } rounded-xl w-64`}>
                   <input
@@ -151,7 +151,7 @@ export default function SavedPosts() {
                   <FiSearch className={`absolute left-3 top-1/2 transform -translate-y-1/2 ${
                     darkMode ? 'text-gray-400' : 'text-gray-500'
                   }`} />
-                </div>
+                </div> */}
               </div>
 
               {error && (

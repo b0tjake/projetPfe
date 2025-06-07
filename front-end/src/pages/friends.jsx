@@ -150,10 +150,10 @@ export default function Friends() {
             {/* Header and Tabs */}
             <div className="mb-8">
               <div className="flex items-center space-x-3 mb-6">
-                <FiUsers className={`text-3xl ${darkMode ? 'text-blue-400' : 'text-blue-600'}`} />
-                <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                  Friends
-                </h1>
+                {/* <FiUsers className={`text-3xl ${darkMode ? 'text-blue-400' : 'text-blue-600'}`} /> */}
+                {/* <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}> */}
+                  {/* Friends */}
+                {/* </h1> */}
               </div>
               <div className="flex space-x-6 border-b border-gray-200">
                 {[

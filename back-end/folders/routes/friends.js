@@ -1,6 +1,7 @@
 const router = require("express").Router();
 const User = require('../models/user');
 const auth = require('../middleWare/authentification');
+const Notification = require('../models/notification');
 
 // POST /api/friends/send/:receiverId
 router.post('/send/:receiverId', auth, async (req, res) => {
@@ -22,8 +23,18 @@ router.post('/send/:receiverId', auth, async (req, res) => {
   sender.friendRequestsSent.push(receiverId);
   receiver.friendRequestsReceived.push(senderId);
 
-  await sender.save();
-  await receiver.save();
+  // Create notification for friend request
+  const notification = new Notification({
+    recipient: receiverId,
+    sender: senderId,
+    type: 'friend_request'
+  });
+
+  await Promise.all([
+    sender.save(),
+    receiver.save(),
+    notification.save()
+  ]);
 
   res.json({ message: "Friend request sent." });
 });

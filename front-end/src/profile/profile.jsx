@@ -3,7 +3,7 @@ import { jwtDecode } from "jwt-decode";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import gsap from "gsap";
-import { FaHeart, FaComment, FaEllipsisV, FaMapMarkerAlt, FaPhone, FaUserEdit, FaSun, FaMoon, FaImage, FaUserPlus, FaTimes, FaCheck, FaUserMinus } from "react-icons/fa";
+import { FaHeart, FaComment, FaEllipsisV, FaMapMarkerAlt, FaPhone, FaUserEdit, FaSun, FaMoon, FaImage, FaUserPlus, FaTimes, FaCheck, FaUserMinus, FaEnvelope } from "react-icons/fa";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { DarkModeContext } from "../assets/darkmode";
 
@@ -400,6 +400,10 @@ const Profile = () => {
     }
   };
 
+  const handleMessage = () => {
+    navigate(`/messages/${id}`);
+  };
+
   if (state.error) return <div className="text-red-500 text-center py-10 text-lg">{state.error}</div>;
   if (state.isLoading) return <div className="text-center mt-10 text-gray-600">Loading profile...</div>;
   if (!state.userData) return <div className="text-center mt-10 text-gray-600">User not found</div>;
@@ -494,11 +498,11 @@ const Profile = () => {
                       Unfriend
                     </button>
                     <button
-                      onClick={() => navigate(`/messages?user=${state.userData._id}`)}
-                      className="w-full bg-blue-600 hover:bg-[#0077B6] text-white py-2 px-4 rounded-md transition flex items-center justify-center gap-2"
+                      onClick={handleMessage}
+                      className={`w-full bg-blue-600 hover:bg-[#0077B6] text-white py-2 px-4 rounded-md transition flex items-center justify-center gap-2`}
                     >
-                      <FaComment className="w-4 h-4" />
-                      Send Message
+                      <FaEnvelope className="w-4 h-4" />
+                      Message
                     </button>
                   </div>
                 )}

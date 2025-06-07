@@ -4,7 +4,8 @@ import { FaSearch, FaPaperPlane, FaEllipsisV, FaUserCircle } from 'react-icons/f
 import { motion } from 'framer-motion';
 import axios from 'axios';
 import Sidebar from '../components/sideBar';
-import { FiSend, FiPaperclip, FiImage } from 'react-icons/fi';
+import { FiSend, FiPaperclip, FiImage, FiMessageSquare } from 'react-icons/fi';
+import { useParams } from 'react-router-dom';
 
 export default function Messages() {
   const { darkMode } = useContext(DarkModeContext);
@@ -18,6 +19,7 @@ export default function Messages() {
   const [conversations, setConversations] = useState([]);
   const [selectedConversation, setSelectedConversation] = useState(null);
   const [newMessage, setNewMessage] = useState('');
+  const { userId } = useParams();
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -36,15 +38,62 @@ export default function Messages() {
   }, []);
 
   useEffect(() => {
+    if (userId) {
+      // If we have a userId from the URL, find or create the conversation
+      const findOrCreateConversation = async () => {
+        try {
+          const token = localStorage.getItem('token');
+          // First try to find an existing conversation
+          const response = await axios.get('http://localhost:5000/api/messages/conversations', {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          });
+          
+          const existingConversation = response.data.find(
+            conv => conv.participant._id === userId
+          );
+
+          if (existingConversation) {
+            setSelectedConversation(existingConversation);
+            fetchMessages(userId);
+          } else {
+            // If no conversation exists, create a new one
+            const userResponse = await axios.get(`http://localhost:5000/api/profile/profile/${userId}`, {
+              headers: {
+                Authorization: `Bearer ${token}`
+              }
+            });
+            
+            const newConversation = {
+              _id: Date.now().toString(), // Temporary ID
+              participant: userResponse.data.user,
+              lastMessage: null,
+              unreadCount: 0
+            };
+            
+            setSelectedConversation(newConversation);
+            setConversations(prev => [newConversation, ...prev]);
+          }
+        } catch (error) {
+          console.error('Error finding/creating conversation:', error);
+        }
+      };
+
+      findOrCreateConversation();
+    }
+  }, [userId]);
+
+  useEffect(() => {
     if (selectedConversation) {
-      fetchMessages(selectedConversation._id);
+      fetchMessages(selectedConversation.participant._id);
     }
   }, [selectedConversation]);
 
   const fetchConversations = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:5000/api/conversations', {
+      const response = await axios.get('http://localhost:5000/api/messages/conversations', {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -57,10 +106,10 @@ export default function Messages() {
     }
   };
 
-  const fetchMessages = async (conversationId) => {
+  const fetchMessages = async (userId) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get(`http://localhost:5000/api/messages/${conversationId}`, {
+      const response = await axios.get(`http://localhost:5000/api/messages/${userId}`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -77,55 +126,22 @@ export default function Messages() {
 
     try {
       const token = localStorage.getItem('token');
-      await axios.post(
-        'http://localhost:5000/api/messages',
-        {
-          conversationId: selectedConversation._id,
-          content: newMessage
-        },
+      const response = await axios.post(
+        `http://localhost:5000/api/messages/${selectedConversation.participant._id}`,
+        { content: newMessage },
         {
           headers: {
             Authorization: `Bearer ${token}`
           }
         }
       );
+      setMessages([...messages, response.data]);
       setNewMessage('');
-      fetchMessages(selectedConversation._id);
+      // Refresh conversations to update the last message
+      fetchConversations();
     } catch (error) {
       console.error('Error sending message:', error);
     }
-  };
-
-  const renderMessage = (msg) => {
-    const isOwnMessage = msg.senderId === user?.id;
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'} mb-4`}
-      >
-        <div className={`max-w-[70%] rounded-lg p-3 ${
-          isOwnMessage
-            ? darkMode
-              ? 'bg-blue-600 text-white'
-              : 'bg-blue-500 text-white'
-            : darkMode
-            ? 'bg-gray-700 text-white'
-            : 'bg-gray-200 text-gray-800'
-        }`}>
-          <p>{msg.content}</p>
-          <span className={`text-xs mt-1 block ${
-            isOwnMessage
-              ? 'text-blue-100'
-              : darkMode
-              ? 'text-gray-400'
-              : 'text-gray-500'
-          }`}>
-            {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-          </span>
-        </div>
-      </motion.div>
-    );
   };
 
   return (
@@ -133,82 +149,112 @@ export default function Messages() {
       <div className="flex flex-col lg:flex-row">
         <Sidebar />
         <div className="flex-1">
-          <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
-            <div className={`p-4 sm:p-6 ${darkMode ? 'bg-gray-800' : 'bg-white'} min-h-screen`}>
-              <h1 className={`text-xl sm:text-2xl font-bold mb-4 sm:mb-6 ${
-                darkMode ? 'text-white' : 'text-gray-900'
-              }`}>
-                Messages
-              </h1>
+          <div className={`p-4 sm:p-6 ${darkMode ? 'bg-gray-800' : 'bg-white'} min-h-screen`}>
+            <div className="max-w-7xl mx-auto">
+              <div className="flex items-center space-x-3 mb-6">
+                <FiMessageSquare className={`text-3xl ${darkMode ? 'text-blue-400' : 'text-blue-600'}`} />
+                <h1 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                  Messages
+                </h1>
+              </div>
 
-              <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
+              <div className="flex flex-col lg:flex-row gap-6">
                 {/* Conversations List */}
                 <div className={`w-full lg:w-1/3 rounded-xl ${
                   darkMode ? 'bg-gray-700' : 'bg-gray-50'
-                } p-4`}>
-                  <h2 className={`text-lg font-semibold mb-4 ${
-                    darkMode ? 'text-white' : 'text-gray-900'
-                  }`}>
-                    Conversations
-                  </h2>
-                  {loading ? (
-                    <div className="flex justify-center items-center h-32">
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
+                } p-4 shadow-lg`}>
+                  <div className="mb-4">
+                    <div className={`relative ${
+                      darkMode ? 'bg-gray-600' : 'bg-white'
+                    } rounded-lg`}>
+                      <input
+                        type="text"
+                        placeholder="Search conversations..."
+                        className={`w-full p-3 pl-10 rounded-lg ${
+                          darkMode 
+                            ? 'bg-gray-600 text-white placeholder-gray-400' 
+                            : 'bg-white text-gray-900 placeholder-gray-500'
+                        } border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                      />
+                      <FaSearch className={`absolute left-3 top-1/2 transform -translate-y-1/2 ${
+                        darkMode ? 'text-gray-400' : 'text-gray-500'
+                      }`} />
                     </div>
-                  ) : (
-                    <div className="space-y-2">
-                      {conversations.map((conversation) => (
-                        <button
+                  </div>
+
+                  <div className="space-y-2 max-h-[calc(100vh-12rem)] overflow-y-auto">
+                    {loading ? (
+                      <div className="flex justify-center items-center h-32">
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
+                      </div>
+                    ) : (
+                      conversations.map((conversation) => (
+                        <motion.button
                           key={conversation._id}
                           onClick={() => setSelectedConversation(conversation)}
-                          className={`w-full p-3 rounded-lg text-left transition-colors ${
+                          className={`w-full p-3 rounded-lg text-left transition-all duration-200 ${
                             selectedConversation?._id === conversation._id
                               ? darkMode
-                                ? 'bg-gray-600'
-                                : 'bg-gray-200'
+                                ? 'bg-gray-600 shadow-lg'
+                                : 'bg-blue-50 shadow-md'
                               : darkMode
-                                ? 'hover:bg-gray-600'
+                                ? 'hover:bg-gray-600/50'
                                 : 'hover:bg-gray-100'
                           }`}
+                          whileHover={{ scale: 1.01 }}
+                          whileTap={{ scale: 0.99 }}
                         >
                           <div className="flex items-center space-x-3">
-                            <img
-                              src={`http://localhost:5000/${conversation.participant.image}`}
-                              alt={conversation.participant.fullname}
-                              className="w-10 h-10 rounded-full object-cover"
-                            />
-                            <div>
-                              <h3 className={`font-medium ${
+                            {conversation.participant.image ? (
+                              <img
+                                src={`http://localhost:5000/${conversation.participant.image}`}
+                                alt={conversation.participant.fullname}
+                                className="w-12 h-12 rounded-full object-cover border-2 border-blue-500"
+                              />
+                            ) : (
+                              <FaUserCircle className="w-12 h-12 text-gray-400" />
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <h3 className={`font-medium truncate ${
                                 darkMode ? 'text-white' : 'text-gray-900'
                               }`}>
                                 {conversation.participant.fullname}
                               </h3>
-                              <p className={`text-sm ${
+                              <p className={`text-sm truncate ${
                                 darkMode ? 'text-gray-400' : 'text-gray-500'
                               }`}>
                                 @{conversation.participant.username}
                               </p>
                             </div>
+                            {conversation.unreadCount > 0 && (
+                              <span className="flex-shrink-0 bg-blue-500 text-white text-xs px-2 py-1 rounded-full">
+                                {conversation.unreadCount}
+                              </span>
+                            )}
                           </div>
-                        </button>
-                      ))}
-                    </div>
-                  )}
+                        </motion.button>
+                      ))
+                    )}
+                  </div>
                 </div>
 
                 {/* Messages Area */}
                 <div className={`flex-1 rounded-xl ${
                   darkMode ? 'bg-gray-700' : 'bg-gray-50'
-                } p-4 flex flex-col h-[calc(100vh-12rem)]`}>
+                } p-4 shadow-lg flex flex-col h-[calc(100vh-12rem)]`}>
                   {selectedConversation ? (
                     <>
                       {/* Messages Header */}
                       <div className="flex items-center space-x-3 mb-4 pb-4 border-b border-gray-200 dark:border-gray-600">
-                        <img
-                          src={`http://localhost:5000/${selectedConversation.participant.image}`}
-                          alt={selectedConversation.participant.fullname}
-                          className="w-10 h-10 rounded-full object-cover"
-                        />
+                        {selectedConversation.participant.image ? (
+                          <img
+                            src={`http://localhost:5000/${selectedConversation.participant.image}`}
+                            alt={selectedConversation.participant.fullname}
+                            className="w-12 h-12 rounded-full object-cover border-2 border-blue-500"
+                          />
+                        ) : (
+                          <FaUserCircle className="w-12 h-12 text-gray-400" />
+                        )}
                         <div>
                           <h3 className={`font-medium ${
                             darkMode ? 'text-white' : 'text-gray-900'
@@ -224,19 +270,21 @@ export default function Messages() {
                       </div>
 
                       {/* Messages List */}
-                      <div className="flex-1 overflow-y-auto space-y-4 mb-4">
+                      <div className="flex-1 overflow-y-auto space-y-4 mb-4 px-2">
                         {messages.map((message) => (
-                          <div
+                          <motion.div
                             key={message._id}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
                             className={`flex ${
-                              message.sender === localStorage.getItem('userId')
+                              message.sender._id === user?.id
                                 ? 'justify-end'
                                 : 'justify-start'
                             }`}
                           >
                             <div
-                              className={`max-w-[70%] rounded-lg p-3 ${
-                                message.sender === localStorage.getItem('userId')
+                              className={`max-w-[70%] rounded-2xl p-3 ${
+                                message.sender._id === user?.id
                                   ? darkMode
                                     ? 'bg-blue-600 text-white'
                                     : 'bg-blue-500 text-white'
@@ -245,9 +293,9 @@ export default function Messages() {
                                     : 'bg-gray-200 text-gray-900'
                               }`}
                             >
-                              <p>{message.content}</p>
+                              <p className="text-sm sm:text-base">{message.content}</p>
                               <p className={`text-xs mt-1 ${
-                                message.sender === localStorage.getItem('userId')
+                                message.sender._id === user?.id
                                   ? 'text-blue-100'
                                   : darkMode
                                     ? 'text-gray-400'
@@ -256,18 +304,18 @@ export default function Messages() {
                                 {new Date(message.createdAt).toLocaleTimeString()}
                               </p>
                             </div>
-                          </div>
+                          </motion.div>
                         ))}
                       </div>
 
                       {/* Message Input */}
-                      <form onSubmit={handleSendMessage} className="flex items-center space-x-2">
+                      <form onSubmit={handleSendMessage} className="flex items-center space-x-2 mt-auto">
                         <input
                           type="text"
                           value={newMessage}
                           onChange={(e) => setNewMessage(e.target.value)}
                           placeholder="Type a message..."
-                          className={`flex-1 p-2 rounded-lg ${
+                          className={`flex-1 p-3 rounded-lg ${
                             darkMode
                               ? 'bg-gray-600 text-white placeholder-gray-400'
                               : 'bg-white text-gray-900 placeholder-gray-500'
@@ -275,7 +323,7 @@ export default function Messages() {
                         />
                         <button
                           type="submit"
-                          className={`p-2 rounded-lg ${
+                          className={`p-3 rounded-lg ${
                             darkMode
                               ? 'bg-blue-600 hover:bg-blue-700'
                               : 'bg-blue-500 hover:bg-blue-600'
@@ -289,7 +337,10 @@ export default function Messages() {
                     <div className={`flex-1 flex items-center justify-center ${
                       darkMode ? 'text-gray-400' : 'text-gray-500'
                     }`}>
-                      <p>Select a conversation to start messaging</p>
+                      <div className="text-center">
+                        <FiMessageSquare className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                        <p className="text-lg">Select a conversation to start messaging</p>
+                      </div>
                     </div>
                   )}
                 </div>

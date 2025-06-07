@@ -84,6 +84,12 @@ app.post('/upVote', async (req, res) => {
 });
 app.post('/downVote',async(req,res) => {
     const {placeId,userId} = req.body
+    
+    // Validate required fields
+    if (!placeId || !userId) {
+        return res.status(400).json({ message: 'placeId and userId are required' });
+    }
+
     try{
         const suggestion = await Suggestion.findById(placeId)
         if(!suggestion){
@@ -100,7 +106,7 @@ app.post('/downVote',async(req,res) => {
         res.status(200).json({
             message: "downVote successfully", 
             updatedPlace: suggestion,
-                })
+        })
     }
     catch(err){
         console.error('Error downvoting:', err)
