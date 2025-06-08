@@ -1,11 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 // import "./register.css";
-import { FaGoogle, FaFacebookF, FaXTwitter } from "react-icons/fa6"; 
+import { FaGoogle, FaFacebookF, FaXTwitter, FaImage, FaUser } from "react-icons/fa6"; 
 import gsap from "gsap";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 export default function Register({setLoading}) {
+  const fileInputRef = useRef(null);
+  const [previewImage, setPreviewImage] = useState(null);
 
   //for gsap
   const [userState, setUserState] = useState(false);
@@ -86,6 +88,20 @@ try {
         ease:"power2.out",
     })
   }, []);
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    setImage(file);
+    
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewImage(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   return (
     <div className="flex justify-center text-black items-center h-screen bg-gray-100">
       <div className="flex w-full card items-center md:items-stretch max-w-4xl p-2 pt-6 md:pt-2 h-full md:h-[90%] bg-white rounded-2xl shadow-lg">
@@ -117,9 +133,47 @@ try {
               <input type="password" id="password" placeholder=" " className="w-full px-4 py-3 border border-gray-300 rounded-md peer" onChange={(e) => setPassword(e.target.value)} onFocus={() => setPassState(true)} />
               <label htmlFor="password" className="absolute passLabel left-4 cursor-text top-3 text-gray-400 text-sm bg-white px-2 text-[17px]">Password</label>
             </div>
-            <div>
-              <input type="file" id="image" className="w-full px-4 py-3 border border-gray-300 rounded-md peer" onChange={(e) => setImage(e.target.files[0])} />
+
+            <div className="mb-4">
+              <input
+                type="file"
+                id="image"
+                ref={fileInputRef}
+                className="hidden"
+                onChange={handleImageChange}
+                accept="image/*"
+              />
+              <div 
+                onClick={() => fileInputRef.current.click()}
+                className="relative cursor-pointer group"
+              >
+                <div className={`w-full h-32 border-2 border-dashed rounded-lg flex flex-col items-center justify-center transition-all ${
+                  previewImage ? 'border-[#00b69a]' : 'border-gray-300 hover:border-[#00b69a]'
+                }`}>
+                  {previewImage ? (
+                    <div className="relative w-full h-full">
+                      <img
+                        src={previewImage}
+                        alt="Preview"
+                        className="w-full h-full object-cover rounded-lg"
+                      />
+                      <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
+                        <FaImage className="text-white text-2xl" />
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="bg-[#00b69a] bg-opacity-10 rounded-full p-3 mb-2">
+                        <FaUser className="text-[#00b69a] text-xl" />
+                      </div>
+                      <p className="text-sm text-gray-500">Click to upload profile picture</p>
+                      <p className="text-xs text-gray-400 mt-1">PNG, JPG up to 10MB</p>
+                    </>
+                  )}
+                </div>
+              </div>
             </div>
+
             <button className="w-full bg-[#00b69a] text-white py-3 mt-3 rounded-md font-semibold hover:bg-[#14a48f] transition-all">
               Sign Up
             </button>
